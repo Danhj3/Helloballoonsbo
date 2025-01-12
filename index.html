@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Negocio de Decoración</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .sidebar { width: 250px; background-color: #333; color: white; height: 100vh; position: fixed; padding-top: 20px; }
+        .sidebar a { color: white; display: block; padding: 15px; text-decoration: none; }
+        .sidebar a:hover { background-color: #575757; }
+        .content { margin-left: 250px; padding: 20px; }
+        .card { background-color: white; padding: 20px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #333; color: white; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Decoración de Escenarios</h2>
+        <a href="#resumen">Resumen Mensual</a>
+        <a href="#inventario">Inventario</a>
+        <a href="#proyectos">Proyectos</a>
+    </div>
+    <div class="content">
+        <div id="resumen" class="card">
+            <h2>Resumen Mensual</h2>
+            <p>Ingresos: $10,000</p>
+            <p>Gastos: $6,000</p>
+            <p>Ganancia Neta: $4,000</p>
+        </div>
+        <div id="inventario" class="card">
+            <h2>Inventario</h2>
+            <table>
+                <tr>
+                    <th>Material</th>
+                    <th>Color</th>
+                    <th>Cantidad</th>
+                </tr>
+                <tr>
+                    <td>Pintura</td>
+                    <td>Rojo</td>
+                    <td>5 litros</td>
+                </tr>
+                <tr>
+                    <td>Tela</td>
+                    <td>Azul</td>
+                    <td>20 metros</td>
+                </tr>
+                <tr>
+                    <td>Sillas</td>
+                    <td>Negro</td>
+                    <td>50 unidades</td>
+                </tr>
+            </table>
+        </div>
+        <div id="proyectos" class="card">
+            <h2>Proyectos</h2>
+            <ul>
+                <li>Boda - 15 de Noviembre</li>
+                <li>Evento Corporativo - 22 de Noviembre</li>
+                <li>Fiesta de Año Nuevo - 31 de Diciembre</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
