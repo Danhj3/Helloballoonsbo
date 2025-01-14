@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hello Balloons - Inventario</title>
+  <title>Hello Balloons - Inventario PDF</title>
+  <!-- Incluimos el script de jsPDF desde un CDN por simplicidad -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
         font-family: Arial, sans-serif;
@@ -14,8 +16,6 @@
         background-attachment: fixed;
         background-position: center;
     }
-    
-    /* Sidebar */
     .sidebar {
         width: 250px;
         background-color: rgba(226, 85, 123, 0.9);
@@ -23,21 +23,17 @@
         height: 100vh;
         position: fixed;
         padding-top: 20px;
-        text-align: center; /* Para centrar el contenido de la barra lateral */
+        text-align: center;
     }
-
-    /* Logo */
     .logo {
         display: block;
         margin: 0 auto 15px;
         width: 120px;
         height: auto;
     }
-
     .sidebar h2 {
         margin: 10px 0;
     }
-
     .sidebar a {
         color: white;
         display: block;
@@ -47,14 +43,10 @@
     .sidebar a:hover {
         background-color: #D6D234;
     }
-
-    /* Contenido principal */
     .content {
         margin-left: 250px;
         padding: 20px;
     }
-    
-    /* Tarjetas */
     .card {
         background-color: rgba(255, 255, 255, 0.9);
         padding: 20px;
@@ -62,8 +54,9 @@
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    
-    /* Barra de búsqueda */
+    h2 {
+        margin-bottom: 1rem;
+    }
     .search-bar {
         margin-bottom: 15px;
         text-align: right;
@@ -75,31 +68,26 @@
         border: 1px solid #ccc;
         border-radius: 4px;
     }
-
-    /* Contenedor responsive para la tabla */
     .table-responsive {
         width: 100%;
-        overflow-x: auto; /* Permite desplazamiento horizontal */
-        -webkit-overflow-scrolling: touch; /* Mejora la experiencia de scroll en móviles */
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
-
-    /* Tablas */
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 600px; /* Opcional: puedes definir un ancho mínimo si la tabla es muy grande */
+        min-width: 600px; 
     }
     th, td {
         padding: 10px;
         border-bottom: 1px solid #ddd;
         text-align: left;
-        white-space: nowrap; /* Evita que el texto salte de línea. Puedes omitirlo si no lo deseas */
+        white-space: nowrap;
     }
     th {
         background-color: #0CA494;
         color: white;
     }
-    
     /* -- Media Query para pantallas pequeñas -- */
     @media (max-width: 768px) {
       .sidebar {
@@ -121,10 +109,35 @@
         width: 100%;
       }
     }
+    /* Sección para el input de fecha y botón */
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .actions input[type="date"] {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .actions button {
+      background-color: #0CA494;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .actions button:hover {
+      background-color: #0b7f78;
+    }
   </style>
 </head>
 <body>
-    <!-- Barra lateral con logo -->
+    <!-- Barra lateral -->
     <div class="sidebar">
         <img 
           src="https://i.imgur.com/41t5f0K.png" 
@@ -135,12 +148,12 @@
         <a href="#inventario">Inventario</a>
     </div>
     
-    <!-- Contenido principal: Inventario con buscador -->
+    <!-- Contenido principal -->
     <div class="content">
         <div id="inventario" class="card">
             <h2>Inventario de Almacén</h2>
 
-            <!-- Barra de búsqueda -->
+            <!-- Barra de búsqueda (opcional) -->
             <div class="search-bar">
                 <input 
                   type="text" 
@@ -150,10 +163,18 @@
                 />
             </div>
 
+            <!-- Acciones: fecha y botón para generar PDF -->
+            <div class="actions">
+              <label for="fecha">Fecha requerida:</label>
+              <input type="date" id="fecha">
+              <button onclick="generatePDF()">Generar PDF</button>
+            </div>
+
             <!-- Contenedor responsivo de la tabla -->
             <div class="table-responsive">
                 <table id="inventoryTable">
                     <tr>
+                        <th></th> <!-- Columna para checkbox -->
                         <th>Artículo</th>
                         <th>Color / Descripción</th>
                         <th>Cantidad</th>
@@ -161,66 +182,77 @@
                     </tr>
                     <!-- Datos simulados -->
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Pintura</td>
                         <td>Rojo, Azul, Amarillo</td>
                         <td>15 litros en total</td>
                         <td>Latas de 1 L c/u</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Globos</td>
                         <td>Blanco, Rosa, Dorado</td>
                         <td>500 unidades</td>
                         <td>Latex y foil</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Telas</td>
                         <td>Blanco, Verde</td>
                         <td>60 metros</td>
                         <td>Algodón y seda</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Paneles</td>
                         <td>Madera pintada</td>
                         <td>10 piezas</td>
                         <td>1.5 m x 1.5 m</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Cilindros</td>
                         <td>Alturas variadas</td>
                         <td>4</td>
                         <td>De 50 cm a 1 m</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Mesas</td>
                         <td>Madera, plegables</td>
                         <td>8 unidades</td>
                         <td>Rectangulares (1.2 m)</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Bandejas</td>
                         <td>Metal dorado</td>
                         <td>12 unidades</td>
                         <td>Diferentes tamaños</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Peluches</td>
                         <td>Animales varios</td>
                         <td>25 piezas</td>
                         <td>Varían en tamaño</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Accesorios</td>
                         <td>Flores, cintas, lazos</td>
                         <td>200 unidades aprox.</td>
                         <td>Surtido para decoración</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Portacanastas</td>
                         <td>Metal y madera</td>
                         <td>6 unidades</td>
                         <td>Soporte para 2 canastas c/u</td>
                     </tr>
                     <tr>
+                        <td><input type="checkbox" /></td>
                         <td>Portaregalos</td>
                         <td>Plástico transparente</td>
                         <td>10 unidades</td>
@@ -231,8 +263,11 @@
         </div>
     </div>
 
-    <!-- Script para filtrar la tabla -->
     <script>
+      /*
+        Función para filtrar la tabla
+        (Opcional, si mantienes el buscador)
+      */
       function filterTable() {
         const input = document.getElementById("searchInput");
         const filter = input.value.toUpperCase();
@@ -240,9 +275,9 @@
         const rows = table.getElementsByTagName("tr");
         
         for (let i = 1; i < rows.length; i++) {
-          const firstCell = rows[i].getElementsByTagName("td")[0];
-          if (firstCell) {
-            const txtValue = firstCell.textContent || firstCell.innerText;
+          const td = rows[i].getElementsByTagName("td")[1]; // Columna de Artículo
+          if (td) {
+            const txtValue = td.textContent || td.innerText;
             if (txtValue.toUpperCase().indexOf(filter) > -1) {
               rows[i].style.display = "";
             } else {
@@ -250,6 +285,132 @@
             }
           }
         }
+      }
+
+      /*
+        Función para generar el PDF de los artículos seleccionados
+        usando la librería jsPDF
+      */
+      async function generatePDF() {
+        // Importamos las funciones necesarias de jsPDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+        // 1. Agregar LOGO (opcional: base64 o URL. Para demo, una URL external no siempre funciona sin CORS).
+        //    - Si no aparece el logo, deberás convertirlo a base64 o usar un servidor con CORS habilitado.
+        //    - Para simplificar, lo dejo como un try/catch.
+        try {
+          const logoUrl = "https://i.imgur.com/41t5f0K.png";
+          const imgData = await getBase64FromUrl(logoUrl);
+          // doc.addImage(imageData, formato, x, y, ancho, alto)
+          doc.addImage(imgData, "PNG", 40, 40, 80, 80);
+        } catch (err) {
+          console.log("No se pudo cargar el logo externamente:", err);
+        }
+
+        // 2. Título
+        doc.setFontSize(14);
+        doc.text("Inventario Seleccionado - Hello Balloons", 40, 140);
+
+        // 3. Texto motivacional (Economía del comportamiento)
+        /*
+          Ejemplo de texto: la idea es apelar a la urgencia o el beneficio
+          de planificar con anticipación.
+        */
+        const textoMotivacional = 
+          "Recuerda que planificar con tiempo reduce costos y estrés. " +
+          "Al tener tus artículos listos para la fecha deseada, " + 
+          "aseguras una mejor disponibilidad y un montaje más ágil. " +
+          "¡Adelántate y disfruta la experiencia!";
+        
+        const fechaSeleccionada = document.getElementById("fecha").value;
+        const fechaTexto = fechaSeleccionada ? 
+          `\n\nFecha requerida: ${fechaSeleccionada}` : 
+          "\n\n(Fecha no especificada)";
+
+        // Nota: .splitTextToSize para ajustar texto
+        doc.setFontSize(12);
+        const lines = doc.splitTextToSize(textoMotivacional + fechaTexto, 500);
+        doc.text(lines, 40, 160);
+
+        // 4. Crear la tabla con los artículos seleccionados
+        const tableRows = [];
+        const tableColumnNames = ["Artículo", "Descripción", "Cantidad", "Observaciones"];
+
+        // Obtenemos la tabla del DOM
+        const table = document.getElementById("inventoryTable");
+        const rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {
+          const checkbox = rows[i].getElementsByTagName("input")[0];
+          // Verificamos si el checkbox está seleccionado
+          if (checkbox && checkbox.checked) {
+            const cells = rows[i].getElementsByTagName("td");
+            // cells[1] => Artículo
+            // cells[2] => Descripción
+            // cells[3] => Cantidad
+            // cells[4] => Observaciones
+            const rowData = [
+              cells[1].innerText, // Artículo
+              cells[2].innerText, // Descripción
+              cells[3].innerText, // Cantidad
+              cells[4].innerText  // Observaciones
+            ];
+            tableRows.push(rowData);
+          }
+        }
+
+        // Si no seleccionamos nada, mostramos un aviso
+        if (tableRows.length === 0) {
+          alert("No has seleccionado ningún artículo.");
+          return;
+        }
+
+        // 5. Dibujamos la tabla en el PDF.  
+        //    Podemos usar un plugin como jspdf-autotable para simplificar.
+        //    Aquí lo hacemos manualmente como ejemplo de base.
+        let currentY = 220; // posición vertical inicial para la tabla
+        const rowHeight = 20;
+
+        // Encabezados de columna
+        doc.setFontSize(12);
+        doc.setFont(undefined, "bold");
+        doc.text(tableColumnNames[0], 40, currentY);
+        doc.text(tableColumnNames[1], 140, currentY);
+        doc.text(tableColumnNames[2], 300, currentY);
+        doc.text(tableColumnNames[3], 400, currentY);
+
+        // Contenido de la tabla
+        doc.setFont(undefined, "normal");
+        currentY += 15; 
+        tableRows.forEach((row) => {
+          doc.text(row[0], 40, currentY);
+          doc.text(row[1], 140, currentY);
+          doc.text(row[2], 300, currentY);
+          doc.text(row[3], 400, currentY);
+          currentY += rowHeight;
+        });
+
+        // 6. Guardamos o abrimos el PDF
+        doc.save("Inventario_HelloBalloons.pdf");
+      }
+
+      /*
+        Función auxiliar para convertir una URL de imagen en base64.
+        - Necesario para addImage en jsPDF si la URL no está en el mismo dominio
+          (o no tiene CORS habilitado).
+        - Si tienes control de tu servidor, puedes habilitar CORS y usar
+          doc.addImage(URL, ...) directamente.
+      */
+      async function getBase64FromUrl(url) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
       }
     </script>
 </body>
