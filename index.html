@@ -295,10 +295,10 @@
         // Importamos las funciones necesarias de jsPDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ unit: "pt", format: "a4" });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
 
-        // 1. Agregar LOGO (opcional: base64 o URL. Para demo, una URL external no siempre funciona sin CORS).
-        //    - Si no aparece el logo, deberás convertirlo a base64 o usar un servidor con CORS habilitado.
-        //    - Para simplificar, lo dejo como un try/catch.
+        // 1. Agregar LOGO (convertir a base64 para evitar problemas CORS).
         try {
           const logoUrl = "https://i.imgur.com/41t5f0K.png";
           const imgData = await getBase64FromUrl(logoUrl);
@@ -308,31 +308,58 @@
           console.log("No se pudo cargar el logo externamente:", err);
         }
 
-        // 2. Título
-        doc.setFontSize(14);
-        doc.text("Inventario Seleccionado - Hello Balloons", 40, 140);
+        // 2. Título (más grande y centrado)
+        doc.setFontSize(18);
+        // Para centrar, usamos la opción align: "center"
+        doc.text(
+          "Inventario Seleccionado - Hello Balloons",
+          pageWidth / 2,
+          90, 
+          { align: "center" }
+        );
 
-        // 3. Texto motivacional (Economía del comportamiento)
-        /*
-          Ejemplo de texto: la idea es apelar a la urgencia o el beneficio
-          de planificar con anticipación.
-        */
+        // 2.1. Agregamos líneas estéticas debajo del título con distintos colores
+        // y un grosor de 2 pt. Ejemplo: 4 líneas en y=95, 100, 105, 110
+        // #E2557B -> rgb(226,85,123)
+        doc.setDrawColor(226, 85, 123);
+        doc.setLineWidth(2);
+        doc.line(40, 95, pageWidth - 40, 95);
+
+        // #0CA494 -> rgb(12,164,148)
+        doc.setDrawColor(12, 164, 148);
+        doc.line(40, 100, pageWidth - 40, 100);
+
+        // #D6D234 -> rgb(214,210,52)
+        doc.setDrawColor(214, 210, 52);
+        doc.line(40, 105, pageWidth - 40, 105);
+
+        // #E8BA26 -> rgb(232,186,38)
+        doc.setDrawColor(232, 186, 38);
+        doc.line(40, 110, pageWidth - 40, 110);
+
+        // 3. Texto motivacional + fecha
+        doc.setFontSize(12);
+        doc.setFont(undefined, "normal");
+
+        const fechaSeleccionada = document.getElementById("fecha").value;
+        const fechaTexto = fechaSeleccionada 
+          ? `\n\nFecha requerida: ${fechaSeleccionada}`
+          : "\n\n(Fecha no especificada)";
+
         const textoMotivacional = 
           "Recuerda que planificar con tiempo reduce costos y estrés. " +
           "Al tener tus artículos listos para la fecha deseada, " + 
           "aseguras una mejor disponibilidad y un montaje más ágil. " +
           "¡Adelántate y disfruta la experiencia!";
+
+        const textoCompleto = textoMotivacional + fechaTexto;
+
+        // Ajustamos el texto para que no se salga del margen (500 pt de ancho)
+        const lines = doc.splitTextToSize(textoCompleto, 500);
+        // Lo mostramos un poco más abajo del último "line" (el de y=110)
+        let textY = 130;
+        doc.text(lines, 40, textY);
         
-        const fechaSeleccionada = document.getElementById("fecha").value;
-        const fechaTexto = fechaSeleccionada ? 
-          `\n\nFecha requerida: ${fechaSeleccionada}` : 
-          "\n\n(Fecha no especificada)";
-
-        // Nota: .splitTextToSize para ajustar texto
-        doc.setFontSize(12);
-        const lines = doc.splitTextToSize(textoMotivacional + fechaTexto, 500);
-        doc.text(lines, 40, 160);
-
         // 4. Crear la tabla con los artículos seleccionados
         const tableRows = [];
         const tableColumnNames = ["Artículo", "Descripción", "Cantidad", "Observaciones"];
@@ -343,13 +370,8 @@
 
         for (let i = 1; i < rows.length; i++) {
           const checkbox = rows[i].getElementsByTagName("input")[0];
-          // Verificamos si el checkbox está seleccionado
           if (checkbox && checkbox.checked) {
             const cells = rows[i].getElementsByTagName("td");
-            // cells[1] => Artículo
-            // cells[2] => Descripción
-            // cells[3] => Cantidad
-            // cells[4] => Observaciones
             const rowData = [
               cells[1].innerText, // Artículo
               cells[2].innerText, // Descripción
@@ -360,27 +382,25 @@
           }
         }
 
-        // Si no seleccionamos nada, mostramos un aviso
+        // Si no seleccionamos nada, mostramos un aviso y salimos
         if (tableRows.length === 0) {
           alert("No has seleccionado ningún artículo.");
           return;
         }
 
-        // 5. Dibujamos la tabla en el PDF.  
-        //    Podemos usar un plugin como jspdf-autotable para simplificar.
-        //    Aquí lo hacemos manualmente como ejemplo de base.
-        let currentY = 220; // posición vertical inicial para la tabla
+        // 5. Dibujamos la tabla en el PDF. 
+        // Bajamos un poco más la posición inicial (por ejemplo, y=220 -> 250)
+        let currentY = 250;
         const rowHeight = 20;
 
-        // Encabezados de columna
-        doc.setFontSize(12);
+        // Encabezados de columna (negrita)
         doc.setFont(undefined, "bold");
         doc.text(tableColumnNames[0], 40, currentY);
         doc.text(tableColumnNames[1], 140, currentY);
         doc.text(tableColumnNames[2], 300, currentY);
         doc.text(tableColumnNames[3], 400, currentY);
 
-        // Contenido de la tabla
+        // Contenido de la tabla (normal)
         doc.setFont(undefined, "normal");
         currentY += 15; 
         tableRows.forEach((row) => {
@@ -397,10 +417,6 @@
 
       /*
         Función auxiliar para convertir una URL de imagen en base64.
-        - Necesario para addImage en jsPDF si la URL no está en el mismo dominio
-          (o no tiene CORS habilitado).
-        - Si tienes control de tu servidor, puedes habilitar CORS y usar
-          doc.addImage(URL, ...) directamente.
       */
       async function getBase64FromUrl(url) {
         const response = await fetch(url);
