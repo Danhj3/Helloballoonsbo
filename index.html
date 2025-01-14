@@ -295,22 +295,33 @@
         // Importamos las funciones necesarias de jsPDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ unit: "pt", format: "a4" });
+        
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
 
-        // 1. Agregar LOGO (convertir a base64 para evitar problemas CORS).
+        // === 1) Agregar LOGO a la izquierda ===
         try {
           const logoUrl = "https://i.imgur.com/41t5f0K.png";
-          const imgData = await getBase64FromUrl(logoUrl);
-          // doc.addImage(imageData, formato, x, y, ancho, alto)
-          doc.addImage(imgData, "PNG", 40, 40, 80, 80);
+          const imgDataLogo = await getBase64FromUrl(logoUrl);
+          doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
         } catch (err) {
           console.log("No se pudo cargar el logo externamente:", err);
         }
 
-        // 2. Título (más grande y centrado)
+        // === 2) Agregar la segunda imagen (misma altura y ancho) a la derecha ===
+        try {
+          const secondImgUrl = "https://i.imgur.com/iyWSuW2.jpeg";
+          const imgDataSecond = await getBase64FromUrl(secondImgUrl);
+          // Posicionamos a la derecha, mismo tamaño (80x80)
+          // Por ejemplo, 40 pt de margen derecho:
+          const xPos = pageWidth - 120 - 40; // 40 pts de margen + 80 de ancho
+          doc.addImage(imgDataSecond, "JPEG", xPos, 40, 80, 80);
+        } catch (err) {
+          console.log("No se pudo cargar la segunda imagen:", err);
+        }
+
+        // === 3) Título centrado y grande ===
         doc.setFontSize(18);
-        // Para centrar, usamos la opción align: "center"
         doc.text(
           "Inventario Seleccionado - Hello Balloons",
           pageWidth / 2,
@@ -318,26 +329,7 @@
           { align: "center" }
         );
 
-        // 2.1. Agregamos líneas estéticas debajo del título con distintos colores
-        // y un grosor de 2 pt. Ejemplo: 4 líneas en y=95, 100, 105, 110
-        // #E2557B -> rgb(226,85,123)
-        doc.setDrawColor(226, 85, 123);
-        doc.setLineWidth(2);
-        doc.line(40, 95, pageWidth - 40, 95);
-
-        // #0CA494 -> rgb(12,164,148)
-        doc.setDrawColor(12, 164, 148);
-        doc.line(40, 100, pageWidth - 40, 100);
-
-        // #D6D234 -> rgb(214,210,52)
-        doc.setDrawColor(214, 210, 52);
-        doc.line(40, 105, pageWidth - 40, 105);
-
-        // #E8BA26 -> rgb(232,186,38)
-        doc.setDrawColor(232, 186, 38);
-        doc.line(40, 110, pageWidth - 40, 110);
-
-        // 3. Texto motivacional + fecha
+        // === 4) Texto motivacional + fecha ===
         doc.setFontSize(12);
         doc.setFont(undefined, "normal");
 
@@ -353,18 +345,11 @@
           "¡Adelántate y disfruta la experiencia!";
 
         const textoCompleto = textoMotivacional + fechaTexto;
-
-        // Ajustamos el texto para que no se salga del margen (500 pt de ancho)
         const lines = doc.splitTextToSize(textoCompleto, 500);
-        // Lo mostramos un poco más abajo del último "line" (el de y=110)
-        let textY = 130;
-        doc.text(lines, 40, textY);
-        
-        // 4. Crear la tabla con los artículos seleccionados
-        const tableRows = [];
-        const tableColumnNames = ["Artículo", "Descripción", "Cantidad", "Observaciones"];
+        doc.text(lines, 40, 160);
 
-        // Obtenemos la tabla del DOM
+        // === 5) Recolectar artículos seleccionados ===
+        const tableRows = [];
         const table = document.getElementById("inventoryTable");
         const rows = table.getElementsByTagName("tr");
 
@@ -382,27 +367,24 @@
           }
         }
 
-        // Si no seleccionamos nada, mostramos un aviso y salimos
         if (tableRows.length === 0) {
           alert("No has seleccionado ningún artículo.");
           return;
         }
 
-        // 5. Dibujamos la tabla en el PDF. 
-        // Bajamos un poco más la posición inicial (por ejemplo, y=220 -> 250)
+        // === 6) Dibujar la tabla (un poco más abajo para que no choque) ===
         let currentY = 250;
         const rowHeight = 20;
-
-        // Encabezados de columna (negrita)
         doc.setFont(undefined, "bold");
-        doc.text(tableColumnNames[0], 40, currentY);
-        doc.text(tableColumnNames[1], 140, currentY);
-        doc.text(tableColumnNames[2], 300, currentY);
-        doc.text(tableColumnNames[3], 400, currentY);
 
-        // Contenido de la tabla (normal)
+        const columnNames = ["Artículo", "Descripción", "Cantidad", "Observaciones"];
+        doc.text(columnNames[0], 40, currentY);
+        doc.text(columnNames[1], 140, currentY);
+        doc.text(columnNames[2], 300, currentY);
+        doc.text(columnNames[3], 400, currentY);
+
         doc.setFont(undefined, "normal");
-        currentY += 15; 
+        currentY += 15;
         tableRows.forEach((row) => {
           doc.text(row[0], 40, currentY);
           doc.text(row[1], 140, currentY);
@@ -411,7 +393,32 @@
           currentY += rowHeight;
         });
 
-        // 6. Guardamos o abrimos el PDF
+        // === 7) Tres líneas estéticas al final de la hoja ===
+        //      Usamos los tres primeros colores:
+        //      #E2557B -> rgb(226,85,123)
+        //      #0CA494 -> rgb(12,164,148)
+        //      #D6D234 -> rgb(214,210,52)
+        //
+        //      Ejemplo: las dibujamos a 50, 55 y 60 puntos desde el borde inferior
+        //      pageHeight - 50, etc.
+        const line1 = pageHeight - 60;
+        const line2 = pageHeight - 55;
+        const line3 = pageHeight - 50;
+
+        // 1ra línea (#E2557B)
+        doc.setDrawColor(226, 85, 123);
+        doc.setLineWidth(2);
+        doc.line(40, line1, pageWidth - 40, line1);
+
+        // 2da línea (#0CA494)
+        doc.setDrawColor(12, 164, 148);
+        doc.line(40, line2, pageWidth - 40, line2);
+
+        // 3ra línea (#D6D234)
+        doc.setDrawColor(214, 210, 52);
+        doc.line(40, line3, pageWidth - 40, line3);
+
+        // === 8) Guardar PDF ===
         doc.save("Inventario_HelloBalloons.pdf");
       }
 
