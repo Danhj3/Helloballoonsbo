@@ -1,61 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Balloons - Dashboard (Enero 2025)</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: url('https://i.imgur.com/7y7PZ9i.jpeg');
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-        }
-        .sidebar {
-            width: 250px;
-            background-color: rgba(226, 85, 123, 0.9);
-            color: white;
-            height: 100vh;
-            position: fixed;
-            padding-top: 20px;
-        }
-        .sidebar a {
-            color: white;
-            display: block;
-            padding: 15px;
-            text-decoration: none;
-        }
-        .sidebar a:hover {
-            background-color: #D6D234;
-        }
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-        .card {
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #0CA494;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hello Balloons - Dashboard (Enero 2025)</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url('https://i.imgur.com/7y7PZ9i.jpeg');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        width: 250px;
+        background-color: rgba(226, 85, 123, 0.9);
+        color: white;
+        height: 100vh;
+        position: fixed;
+        padding-top: 20px;
+    }
+    .sidebar a {
+        color: white;
+        display: block;
+        padding: 15px;
+        text-decoration: none;
+    }
+    .sidebar a:hover {
+        background-color: #D6D234;
+    }
+
+    /* Contenido principal */
+    .content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+    
+    /* Tarjetas */
+    .card {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Tablas */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+    th {
+        background-color: #0CA494;
+        color: white;
+    }
+
+    /* -- Media Query para pantallas pequeñas -- */
+    @media (max-width: 768px) {
+      /* Ajusta la barra lateral para que ocupe el ancho completo y se ubique arriba */
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+      }
+      /* Los enlaces pueden ponerse en línea o seguir en bloque, como prefieras */
+      .sidebar a {
+        display: block; 
+        text-align: center;
+      }
+      /* Para que el contenido no tenga margen a la izquierda */
+      .content {
+        margin-left: 0;
+      }
+    }
+
+  </style>
 </head>
 <body>
     <div class="sidebar">
@@ -64,6 +92,7 @@
         <a href="#inventario">Inventario</a>
         <a href="#proyectos">Proyectos</a>
     </div>
+    
     <div class="content">
         <!-- Resumen Mensual -->
         <div id="resumen" class="card">
