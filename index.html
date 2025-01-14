@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hello Balloons - Dashboard (Enero 2025)</title>
+  <title>Hello Balloons - Inventario</title>
   <style>
     body {
         font-family: Arial, sans-serif;
@@ -23,7 +23,21 @@
         height: 100vh;
         position: fixed;
         padding-top: 20px;
+        text-align: center; /* Para centrar el contenido de la barra lateral */
     }
+
+    /* Logo */
+    .logo {
+        display: block;
+        margin: 0 auto 15px;
+        width: 120px;
+        height: auto;
+    }
+
+    .sidebar h2 {
+        margin: 10px 0;
+    }
+
     .sidebar a {
         color: white;
         display: block;
@@ -63,7 +77,7 @@
         background-color: #0CA494;
         color: white;
     }
-
+    
     /* -- Media Query para pantallas pequeñas -- */
     @media (max-width: 768px) {
       /* Ajusta la barra lateral para que ocupe el ancho completo y se ubique arriba */
@@ -72,76 +86,107 @@
         width: 100%;
         height: auto;
       }
-      /* Los enlaces pueden ponerse en línea o seguir en bloque, como prefieras */
       .sidebar a {
         display: block; 
         text-align: center;
       }
-      /* Para que el contenido no tenga margen a la izquierda */
       .content {
         margin-left: 0;
       }
     }
-
   </style>
 </head>
 <body>
+    <!-- Barra lateral con logo y solo enlace de inventario -->
     <div class="sidebar">
+        <img 
+          src="https://i.imgur.com/41t5f0K.png" 
+          alt="Hello Balloons Logo" 
+          class="logo"
+        >
         <h2>Hello Balloons</h2>
-        <a href="#resumen">Resumen Mensual</a>
         <a href="#inventario">Inventario</a>
-        <a href="#proyectos">Proyectos</a>
     </div>
     
+    <!-- Contenido principal: solo Inventario -->
     <div class="content">
-        <!-- Resumen Mensual -->
-        <div id="resumen" class="card">
-            <h2>Resumen Mensual - Enero 2025</h2>
-            <p>Ingresos: $12,000</p>
-            <p>Gastos: $7,500</p>
-            <p>Ganancia Neta: $4,500</p>
-        </div>
-
-        <!-- Inventario -->
         <div id="inventario" class="card">
-            <h2>Inventario</h2>
+            <h2>Inventario de Almacén</h2>
             <table>
                 <tr>
-                    <th>Material</th>
-                    <th>Color</th>
+                    <th>Artículo</th>
+                    <th>Color / Descripción</th>
                     <th>Cantidad</th>
+                    <th>Observaciones</th>
                 </tr>
+                <!-- Ejemplos de datos simulados -->
                 <tr>
                     <td>Pintura</td>
-                    <td>Rosa</td>
-                    <td>10 litros</td>
+                    <td>Rojo, Azul, Amarillo</td>
+                    <td>15 litros en total</td>
+                    <td>Latas de 1 L c/u</td>
                 </tr>
                 <tr>
                     <td>Globos</td>
-                    <td>Blanco</td>
-                    <td>200 unidades</td>
+                    <td>Blanco, Rosa, Dorado</td>
+                    <td>500 unidades</td>
+                    <td>Latex y foil</td>
                 </tr>
                 <tr>
-                    <td>Tela</td>
-                    <td>Amarillo</td>
-                    <td>25 metros</td>
+                    <td>Telas</td>
+                    <td>Blanco, Verde</td>
+                    <td>60 metros</td>
+                    <td>Algodón y seda</td>
                 </tr>
                 <tr>
-                    <td>Centro de mesa</td>
-                    <td>Multicolor</td>
-                    <td>15 piezas</td>
+                    <td>Paneles</td>
+                    <td>Paneles de madera pintada</td>
+                    <td>10 piezas</td>
+                    <td>1.5 m x 1.5 m</td>
+                </tr>
+                <tr>
+                    <td>Cilindros</td>
+                    <td>Alturas variadas</td>
+                    <td>4</td>
+                    <td>De 50 cm a 1 m</td>
+                </tr>
+                <tr>
+                    <td>Mesas</td>
+                    <td>Madera, plegables</td>
+                    <td>8 unidades</td>
+                    <td>Rectangulares (1.2 m)</td>
+                </tr>
+                <tr>
+                    <td>Bandejas</td>
+                    <td>Metal dorado</td>
+                    <td>12 unidades</td>
+                    <td>Diferentes tamaños</td>
+                </tr>
+                <tr>
+                    <td>Peluches</td>
+                    <td>Animales varios</td>
+                    <td>25 piezas</td>
+                    <td>Varían en tamaño</td>
+                </tr>
+                <tr>
+                    <td>Accesorios</td>
+                    <td>Flores, cintas, lazos</td>
+                    <td>200 unidades aprox.</td>
+                    <td>Surtido para decoración</td>
+                </tr>
+                <tr>
+                    <td>Portacanastas</td>
+                    <td>Metal y madera</td>
+                    <td>6 unidades</td>
+                    <td>Soporte para 2 canastas c/u</td>
+                </tr>
+                <tr>
+                    <td>Portaregalos</td>
+                    <td>Plástico transparente</td>
+                    <td>10 unidades</td>
+                    <td>Para exhibición en mesa</td>
                 </tr>
             </table>
-        </div>
-
-        <!-- Proyectos -->
-        <div id="proyectos" class="card">
-            <h2>Proyectos - Enero 2025</h2>
-            <ul>
-                <li>Boda de Invierno - 10 de Enero</li>
-                <li>Evento Corporativo - 20 de Enero</li>
-                <li>Fiesta de Cumpleaños - 25 de Enero</li>
-            </ul>
         </div>
     </div>
 </body>
