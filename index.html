@@ -34,14 +34,28 @@
     .sidebar h2 {
         margin: 10px 0;
     }
-    .sidebar a {
-        color: white;
-        display: block;
-        padding: 15px;
-        text-decoration: none;
+    .sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
     }
-    .sidebar a:hover {
+    .sidebar nav a {
+        color: white;
+        text-decoration: none;
+        padding: 10px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+    .sidebar nav a:hover {
         background-color: #D6D234;
+        color: #000;
+    }
+    .menu-icon {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+        margin-bottom: 10px;
     }
     .content {
         margin-left: 250px;
@@ -88,51 +102,80 @@
         background-color: #0CA494;
         color: white;
     }
+    .color-box {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin-right: 10px;
+        border: 1px solid #000;
+    }
+    .back-to-top {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #0CA494;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    .back-to-top:hover {
+        background-color: #0b7f78;
+    }
     /* -- Media Query para pantallas pequeñas -- */
     @media (max-width: 768px) {
-      .sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-      }
-      .sidebar a {
-        display: block; 
-        text-align: center;
-      }
-      .content {
-        margin-left: 0;
-      }
-      .search-bar {
-        text-align: left;
-      }
-      .search-bar input {
-        width: 100%;
-      }
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: static;
+            padding-top: 10px;
+        }
+        .sidebar nav {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .sidebar nav.active {
+            display: flex;
+        }
+        .menu-icon {
+            display: block;
+        }
+        .content {
+            margin-left: 0;
+        }
+        .search-bar {
+            text-align: left;
+        }
+        .search-bar input {
+            width: 100%;
+        }
     }
     /* Sección para el input de fecha y botón */
     .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 1rem;
     }
     .actions input[type="date"] {
-      padding: 8px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
     }
     .actions button {
-      background-color: #0CA494;
-      color: #fff;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      border-radius: 4px;
+        background-color: #0CA494;
+        color: #fff;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 4px;
     }
     .actions button:hover {
-      background-color: #0b7f78;
+        background-color: #0b7f78;
     }
   </style>
 </head>
@@ -145,296 +188,322 @@
           class="logo"
         >
         <h2>Hello Balloons</h2>
-        <a href="#inventario">Inventario</a>
+        <!-- Icono del menú para móviles -->
+        <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
+        <!-- Menú de navegación -->
+        <nav id="sidebarNav">
+            <a href="#pinturas">Pinturas</a>
+            <a href="#mobiliario">Mobiliario</a>
+            <a href="#accesorios">Accesorios</a>
+            <a href="#telas">Telas</a>
+            <a href="#alfombras">Alfombras</a>
+        </nav>
     </div>
     
     <!-- Contenido principal -->
     <div class="content">
-        <div id="inventario" class="card">
-            <h2>Inventario de Almacén</h2>
-
-            <!-- Barra de búsqueda (opcional) -->
+        <!-- Tabla de Pinturas -->
+        <div id="pinturas" class="card">
+            <h2>Inventario de Pinturas</h2>
+            <!-- Barra de búsqueda -->
             <div class="search-bar">
                 <input 
                   type="text" 
-                  id="searchInput" 
-                  placeholder="Buscar artículo (ej. Globos, Pintura...)" 
-                  onkeyup="filterTable()" 
+                  id="searchPinturas" 
+                  placeholder="Buscar por nombre o código..." 
+                  onkeyup="filterTable('pinturasTable', 'searchPinturas')" 
                 />
             </div>
-
-            <!-- Acciones: fecha y botón para generar PDF -->
-            <div class="actions">
-              <label for="fecha">Fecha requerida:</label>
-              <input type="date" id="fecha">
-              <button onclick="generatePDF()">Generar PDF</button>
-            </div>
-
-            <!-- Contenedor responsivo de la tabla -->
             <div class="table-responsive">
-                <table id="inventoryTable">
-                    <tr>
-                        <th></th> <!-- Columna para checkbox -->
-                        <th>Artículo</th>
-                        <th>Color / Descripción</th>
-                        <th>Cantidad</th>
-                        <th>Observaciones</th>
-                    </tr>
-                    <!-- Datos simulados -->
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Pintura</td>
-                        <td>Rojo, Azul, Amarillo</td>
-                        <td>15 litros en total</td>
-                        <td>Latas de 1 L c/u</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Globos</td>
-                        <td>Blanco, Rosa, Dorado</td>
-                        <td>500 unidades</td>
-                        <td>Latex y foil</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Telas</td>
-                        <td>Blanco, Verde</td>
-                        <td>60 metros</td>
-                        <td>Algodón y seda</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Paneles</td>
-                        <td>Madera pintada</td>
-                        <td>10 piezas</td>
-                        <td>1.5 m x 1.5 m</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Cilindros</td>
-                        <td>Alturas variadas</td>
-                        <td>4</td>
-                        <td>De 50 cm a 1 m</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Mesas</td>
-                        <td>Madera, plegables</td>
-                        <td>8 unidades</td>
-                        <td>Rectangulares (1.2 m)</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Bandejas</td>
-                        <td>Metal dorado</td>
-                        <td>12 unidades</td>
-                        <td>Diferentes tamaños</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Peluches</td>
-                        <td>Animales varios</td>
-                        <td>25 piezas</td>
-                        <td>Varían en tamaño</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Accesorios</td>
-                        <td>Flores, cintas, lazos</td>
-                        <td>200 unidades aprox.</td>
-                        <td>Surtido para decoración</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Portacanastas</td>
-                        <td>Metal y madera</td>
-                        <td>6 unidades</td>
-                        <td>Soporte para 2 canastas c/u</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" /></td>
-                        <td>Portaregalos</td>
-                        <td>Plástico transparente</td>
-                        <td>10 unidades</td>
-                        <td>Para exhibición en mesa</td>
-                    </tr>
+                <table id="pinturasTable">
+                    <!-- Contenido de la tabla de pinturas -->
                 </table>
             </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Mobiliario -->
+        <div id="mobiliario" class="card">
+            <h2>Inventario de Mobiliario</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchMobiliario" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('mobiliarioTable', 'searchMobiliario')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="mobiliarioTable">
+                    <!-- Contenido de la tabla de mobiliario -->
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Accesorios -->
+        <div id="accesorios" class="card">
+            <h2>Inventario de Accesorios</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchAccesorios" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('accesoriosTable', 'searchAccesorios')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="accesoriosTable">
+                    <!-- Contenido de la tabla de accesorios -->
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Telas -->
+        <div id="telas" class="card">
+            <h2>Inventario de Telas</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchTelas" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('telasTable', 'searchTelas')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="telasTable">
+                    <!-- Contenido de la tabla de telas -->
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Alfombras -->
+        <div id="alfombras" class="card">
+            <h2>Inventario de Alfombras</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchAlfombras" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('alfombrasTable', 'searchAlfombras')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="alfombrasTable">
+                    <!-- Contenido de la tabla de alfombras -->
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Acciones: fecha y botón para generar PDF -->
+        <div class="actions">
+            <label for="fecha">Fecha requerida:</label>
+            <input type="date" id="fecha">
+            <button onclick="generatePDF()">Generar PDF</button>
         </div>
     </div>
 
     <script>
-      /*
-        Función para filtrar la tabla
-        (Opcional, si mantienes el buscador)
-      */
-      function filterTable() {
-        const input = document.getElementById("searchInput");
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById("inventoryTable");
-        const rows = table.getElementsByTagName("tr");
-        
-        for (let i = 1; i < rows.length; i++) {
-          const td = rows[i].getElementsByTagName("td")[1]; // Columna de Artículo
-          if (td) {
-            const txtValue = td.textContent || td.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-              rows[i].style.display = "";
-            } else {
-              rows[i].style.display = "none";
+        /*
+          Función para mostrar/ocultar el menú en dispositivos móviles
+        */
+        function toggleMenu() {
+            const nav = document.getElementById("sidebarNav");
+            nav.classList.toggle("active");
+        }
+
+        /*
+          Función para filtrar la tabla
+        */
+        function filterTable(tableId, searchInputId) {
+            const input = document.getElementById(searchInputId);
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById(tableId);
+            const rows = table.getElementsByTagName("tr");
+            
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                let match = false;
+                for (let j = 1; j < cells.length; j++) {
+                    const txtValue = cells[j].textContent || cells[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        match = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? "" : "none";
             }
-          }
-        }
-      }
-
-      /*
-        Función para generar el PDF de los artículos seleccionados
-        usando la librería jsPDF
-      */
-      async function generatePDF() {
-        // Importamos las funciones necesarias de jsPDF
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ unit: "pt", format: "a4" });
-        
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-
-        // === 1) Agregar LOGO a la izquierda ===
-        try {
-          const logoUrl = "https://i.imgur.com/41t5f0K.png";
-          const imgDataLogo = await getBase64FromUrl(logoUrl);
-          doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
-        } catch (err) {
-          console.log("No se pudo cargar el logo externamente:", err);
         }
 
-        // === 2) Agregar la segunda imagen (misma altura y ancho) a la derecha ===
-        try {
-          const secondImgUrl = "https://i.imgur.com/iyWSuW2.jpeg";
-          const imgDataSecond = await getBase64FromUrl(secondImgUrl);
-          // Posicionamos a la derecha, mismo tamaño (80x80)
-          // Por ejemplo, 40 pt de margen derecho:
-          const xPos = pageWidth - 120 - 40; // 40 pts de margen + 80 de ancho
-          doc.addImage(imgDataSecond, "JPEG", xPos, 40, 80, 80);
-        } catch (err) {
-          console.log("No se pudo cargar la segunda imagen:", err);
-        }
+        /*
+          Función para generar el PDF de los artículos seleccionados
+          usando la librería jsPDF
+        */
+        async function generatePDF() {
+            // Importamos las funciones necesarias de jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: "pt", format: "a4" });
+            
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
 
-        // === 3) Título centrado y grande ===
-        doc.setFontSize(18);
-        doc.text(
-          "Inventario Seleccionado - Hello Balloons",
-          pageWidth / 2,
-          90, 
-          { align: "center" }
-        );
+            // === 1) Agregar LOGO a la izquierda ===
+            try {
+                const logoUrl = "https://i.imgur.com/41t5f0K.png";
+                const imgDataLogo = await getBase64FromUrl(logoUrl);
+                doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
+            } catch (err) {
+                console.log("No se pudo cargar el logo externamente:", err);
+            }
 
-        // === 4) Texto motivacional + fecha ===
-        doc.setFontSize(12);
-        doc.setFont(undefined, "normal");
+            // === 2) Agregar la segunda imagen (misma altura y ancho) a la derecha ===
+            try {
+                const secondImgUrl = "https://i.imgur.com/iyWSuW2.jpeg";
+                const imgDataSecond = await getBase64FromUrl(secondImgUrl);
+                // Posicionamos a la derecha, mismo tamaño (80x80)
+                // Por ejemplo, 40 pt de margen derecho:
+                const xPos = pageWidth - 120 - 40; // 40 pts de margen + 80 de ancho
+                doc.addImage(imgDataSecond, "JPEG", xPos, 40, 80, 80);
+            } catch (err) {
+                console.log("No se pudo cargar la segunda imagen:", err);
+            }
 
-        const fechaSeleccionada = document.getElementById("fecha").value;
-        const fechaTexto = fechaSeleccionada 
-          ? `\n\nFecha requerida: ${fechaSeleccionada}`
-          : "\n\n(Fecha no especificada)";
+            // === 3) Título centrado y grande ===
+            doc.setFontSize(18);
+            doc.text(
+                "Inventario Seleccionado", // Título principal
+                pageWidth / 2,
+                90, 
+                { align: "center" }
+            );
 
-        const textoMotivacional = 
-          "Recuerda que planificar con tiempo reduce costos y estrés. " +
-          "Al tener tus artículos listos para la fecha deseada, " + 
-          "aseguras una mejor disponibilidad y un montaje más ágil. " +
-          "¡Adelántate y disfruta la experiencia!";
+            // === 4) Subtítulo "Hello Balloons" ===
+            doc.setFontSize(14);
+            doc.text(
+                "Hello Balloons", // Subtítulo
+                pageWidth / 2,
+                110, 
+                { align: "center" }
+            );
 
-        const textoCompleto = textoMotivacional + fechaTexto;
-        const lines = doc.splitTextToSize(textoCompleto, 500);
-        doc.text(lines, 40, 160);
+            // === 5) Texto motivacional + fecha ===
+            doc.setFontSize(12);
+            doc.setFont(undefined, "normal");
 
-        // === 5) Recolectar artículos seleccionados ===
-        const tableRows = [];
-        const table = document.getElementById("inventoryTable");
-        const rows = table.getElementsByTagName("tr");
+            const fechaSeleccionada = document.getElementById("fecha").value;
+            const fechaTexto = fechaSeleccionada 
+                ? `\n\nFecha requerida: ${fechaSeleccionada}`
+                : "\n\n(Fecha no especificada)";
 
-        for (let i = 1; i < rows.length; i++) {
-          const checkbox = rows[i].getElementsByTagName("input")[0];
-          if (checkbox && checkbox.checked) {
-            const cells = rows[i].getElementsByTagName("td");
-            const rowData = [
-              cells[1].innerText, // Artículo
-              cells[2].innerText, // Descripción
-              cells[3].innerText, // Cantidad
-              cells[4].innerText  // Observaciones
+            const textoMotivacional = 
+                "Recuerda que planificar con tiempo reduce costos y estrés. " +
+                "Al tener tus artículos listos para la fecha deseada, " + 
+                "aseguras una mejor disponibilidad y un montaje más ágil. " +
+                "¡Adelántate y disfruta la experiencia!";
+
+            const textoCompleto = textoMotivacional + fechaTexto;
+            const lines = doc.splitTextToSize(textoCompleto, 500);
+            doc.text(lines, 40, 140);
+
+            // === 6) Recolectar artículos seleccionados ===
+            const tables = [
+                { id: "pinturasTable", name: "Pinturas" },
+                { id: "mobiliarioTable", name: "Mobiliario" },
+                { id: "accesoriosTable", name: "Accesorios" },
+                { id: "telasTable", name: "Telas" },
+                { id: "alfombrasTable", name: "Alfombras" }
             ];
-            tableRows.push(rowData);
-          }
+
+            let currentY = 180;
+
+            tables.forEach(table => {
+                const tableRows = [];
+                const tableElement = document.getElementById(table.id);
+                const rows = tableElement.getElementsByTagName("tr");
+
+                for (let i = 1; i < rows.length; i++) {
+                    const checkbox = rows[i].getElementsByTagName("input")[0];
+                    if (checkbox && checkbox.checked) {
+                        const cells = rows[i].getElementsByTagName("td");
+                        const rowData = [];
+                        for (let j = 1; j < cells.length; j++) {
+                            rowData.push(cells[j].innerText);
+                        }
+                        tableRows.push(rowData);
+                    }
+                }
+
+                if (tableRows.length > 0) {
+                    // === 7) Dibujar la tabla ===
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, "bold");
+                    doc.text(table.name, 40, currentY);
+                    currentY += 20;
+
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, "normal");
+
+                    tableRows.forEach((row) => {
+                        doc.text(row.join(" - "), 40, currentY);
+                        currentY += 20;
+                    });
+
+                    currentY += 10; // Espacio entre tablas
+                }
+            });
+
+            if (currentY === 180) {
+                alert("No has seleccionado ningún artículo.");
+                return;
+            }
+
+            // === 8) Tres líneas estéticas al final de la hoja ===
+            const line1 = pageHeight - 60;
+            const line2 = pageHeight - 55;
+            const line3 = pageHeight - 50;
+
+            // 1ra línea (#E2557B)
+            doc.setDrawColor(226, 85, 123);
+            doc.setLineWidth(2);
+            doc.line(40, line1, pageWidth - 40, line1);
+
+            // 2da línea (#0CA494)
+            doc.setDrawColor(12, 164, 148);
+            doc.line(40, line2, pageWidth - 40, line2);
+
+            // 3ra línea (#D6D234)
+            doc.setDrawColor(214, 210, 52);
+            doc.line(40, line3, pageWidth - 40, line3);
+
+            // === 9) Guardar PDF ===
+            doc.save("Inventario_HelloBalloons.pdf");
         }
 
-        if (tableRows.length === 0) {
-          alert("No has seleccionado ningún artículo.");
-          return;
+        /*
+          Función auxiliar para convertir una URL de imagen en base64.
+        */
+        async function getBase64FromUrl(url) {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
-
-        // === 6) Dibujar la tabla (un poco más abajo para que no choque) ===
-        let currentY = 250;
-        const rowHeight = 20;
-        doc.setFont(undefined, "bold");
-
-        const columnNames = ["Artículo", "Descripción", "Cantidad", "Observaciones"];
-        doc.text(columnNames[0], 40, currentY);
-        doc.text(columnNames[1], 140, currentY);
-        doc.text(columnNames[2], 300, currentY);
-        doc.text(columnNames[3], 400, currentY);
-
-        doc.setFont(undefined, "normal");
-        currentY += 15;
-        tableRows.forEach((row) => {
-          doc.text(row[0], 40, currentY);
-          doc.text(row[1], 140, currentY);
-          doc.text(row[2], 300, currentY);
-          doc.text(row[3], 400, currentY);
-          currentY += rowHeight;
-        });
-
-        // === 7) Tres líneas estéticas al final de la hoja ===
-        //      Usamos los tres primeros colores:
-        //      #E2557B -> rgb(226,85,123)
-        //      #0CA494 -> rgb(12,164,148)
-        //      #D6D234 -> rgb(214,210,52)
-        //
-        //      Ejemplo: las dibujamos a 50, 55 y 60 puntos desde el borde inferior
-        //      pageHeight - 50, etc.
-        const line1 = pageHeight - 60;
-        const line2 = pageHeight - 55;
-        const line3 = pageHeight - 50;
-
-        // 1ra línea (#E2557B)
-        doc.setDrawColor(226, 85, 123);
-        doc.setLineWidth(2);
-        doc.line(40, line1, pageWidth - 40, line1);
-
-        // 2da línea (#0CA494)
-        doc.setDrawColor(12, 164, 148);
-        doc.line(40, line2, pageWidth - 40, line2);
-
-        // 3ra línea (#D6D234)
-        doc.setDrawColor(214, 210, 52);
-        doc.line(40, line3, pageWidth - 40, line3);
-
-        // === 8) Guardar PDF ===
-        doc.save("Inventario_HelloBalloons.pdf");
-      }
-
-      /*
-        Función auxiliar para convertir una URL de imagen en base64.
-      */
-      async function getBase64FromUrl(url) {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      }
     </script>
 </body>
 </html>
