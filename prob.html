@@ -672,13 +672,22 @@
         }
 
         // === 3) Título centrado y grande ===
-        doc.setFontSize(18);
-        doc.text(
-          "Inventario Seleccionado - Hello Balloons",
-          pageWidth / 2,
-          90, 
-          { align: "center" }
-        );
+  doc.setFontSize(18);
+  doc.text(
+    "Inventario Seleccionado", // Título principal
+    pageWidth / 2,
+    90, 
+    { align: "center" }
+  );
+
+  // === 3A) Subtítulo "Hello Balloons" ===
+  doc.setFontSize(14);
+  doc.text(
+    "Hello Balloons", // Subtítulo
+    pageWidth / 2,
+    110, 
+    { align: "center" }
+  );
 
         // === 4) Texto motivacional + fecha ===
         doc.setFontSize(12);
