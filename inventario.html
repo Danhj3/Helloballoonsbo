@@ -705,145 +705,147 @@
           Función para generar el PDF de los artículos seleccionados
           usando la librería jsPDF
         */
-        async function generatePDF() {
-            // Importamos las funciones necesarias de jsPDF
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ unit: "pt", format: "a4" });
-            
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
+       async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-            // === 1) Agregar LOGO a la izquierda ===
-            try {
-                const logoUrl = "https://i.imgur.com/41t5f0K.png";
-                const imgDataLogo = await getBase64FromUrl(logoUrl);
-                doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
-            } catch (err) {
-                console.log("No se pudo cargar el logo externamente:", err);
+    // === 1) Agregar LOGO a la izquierda ===
+    try {
+        const logoUrl = "https://i.imgur.com/41t5f0K.png";
+        const imgDataLogo = await getBase64FromUrl(logoUrl);
+        doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
+    } catch (err) {
+        console.log("No se pudo cargar el logo externamente:", err);
+    }
+
+    // === 2) Agregar la segunda imagen (misma altura y ancho) a la derecha ===
+    try {
+        const secondImgUrl = "https://i.imgur.com/iyWSuW2.jpeg";
+        const imgDataSecond = await getBase64FromUrl(secondImgUrl);
+        const xPos = pageWidth - 120 - 40; // 40 pts de margen + 80 de ancho
+        doc.addImage(imgDataSecond, "JPEG", xPos, 40, 80, 80);
+    } catch (err) {
+        console.log("No se pudo cargar la segunda imagen:", err);
+    }
+
+    // === 3) Título centrado y grande ===
+    doc.setFontSize(18);
+    doc.text(
+        "Inventario Seleccionado", // Título principal
+        pageWidth / 2,
+        90, 
+        { align: "center" }
+    );
+
+    // === 4) Subtítulo "Hello Balloons" ===
+    doc.setFontSize(14);
+    doc.text(
+        "Hello Balloons", // Subtítulo
+        pageWidth / 2,
+        110, 
+        { align: "center" }
+    );
+
+    // === 5) Texto motivacional + fecha ===
+    doc.setFontSize(12);
+    doc.setFont(undefined, "normal");
+
+    const fechaSeleccionada = document.getElementById("fecha").value;
+    const fechaTexto = fechaSeleccionada 
+        ? `\n\nFecha requerida: ${fechaSeleccionada}`
+        : "\n\n(Fecha no especificada)";
+
+    const textoMotivacional = 
+        "Recuerda que planificar con tiempo reduce costos y estrés. " +
+        "Al tener tus artículos listos para la fecha deseada, " + 
+        "aseguras una mejor disponibilidad y un montaje más ágil. " +
+        "¡Adelántate y disfruta la experiencia!";
+
+    const textoCompleto = textoMotivacional + fechaTexto;
+    const lines = doc.splitTextToSize(textoCompleto, 500);
+
+    // Ajustar la posición del texto motivacional y la fecha
+    const textHeight = lines.length * 12; // Aproximadamente 12pt por línea
+    const textY = 140; // Posición inicial del texto
+
+    doc.text(lines, 40, textY);
+
+    // === 6) Recolectar artículos seleccionados ===
+    const tables = [
+        { id: "pinturasTable", name: "Pinturas" },
+        { id: "mobiliarioTable", name: "Mobiliario" },
+        { id: "accesoriosTable", name: "Accesorios" },
+        { id: "telasTable", name: "Telas" },
+        { id: "alfombrasTable", name: "Alfombras" }
+    ];
+
+    let currentY = textY + textHeight + 20; // Ajustar la posición inicial de las tablas
+
+    tables.forEach(table => {
+        const tableRows = [];
+        const tableElement = document.getElementById(table.id);
+        const rows = tableElement.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {
+            const checkbox = rows[i].getElementsByTagName("input")[0];
+            if (checkbox && checkbox.checked) {
+                const cells = rows[i].getElementsByTagName("td");
+                const rowData = [];
+                for (let j = 1; j < cells.length; j++) {
+                    rowData.push(cells[j].innerText);
+                }
+                tableRows.push(rowData);
             }
+        }
 
-            // === 2) Agregar la segunda imagen (misma altura y ancho) a la derecha ===
-            try {
-                const secondImgUrl = "https://i.imgur.com/iyWSuW2.jpeg";
-                const imgDataSecond = await getBase64FromUrl(secondImgUrl);
-                // Posicionamos a la derecha, mismo tamaño (80x80)
-                // Por ejemplo, 40 pt de margen derecho:
-                const xPos = pageWidth - 120 - 40; // 40 pts de margen + 80 de ancho
-                doc.addImage(imgDataSecond, "JPEG", xPos, 40, 80, 80);
-            } catch (err) {
-                console.log("No se pudo cargar la segunda imagen:", err);
-            }
-
-            // === 3) Título centrado y grande ===
-            doc.setFontSize(18);
-            doc.text(
-                "Inventario Seleccionado", // Título principal
-                pageWidth / 2,
-                90, 
-                { align: "center" }
-            );
-
-            // === 4) Subtítulo "Hello Balloons" ===
+        if (tableRows.length > 0) {
+            // === 7) Dibujar la tabla ===
             doc.setFontSize(14);
-            doc.text(
-                "Hello Balloons", // Subtítulo
-                pageWidth / 2,
-                110, 
-                { align: "center" }
-            );
+            doc.setFont(undefined, "bold");
+            doc.text(table.name, 40, currentY);
+            currentY += 20;
 
-            // === 5) Texto motivacional + fecha ===
             doc.setFontSize(12);
             doc.setFont(undefined, "normal");
 
-            const fechaSeleccionada = document.getElementById("fecha").value;
-            const fechaTexto = fechaSeleccionada 
-                ? `\n\nFecha requerida: ${fechaSeleccionada}`
-                : "\n\n(Fecha no especificada)";
-
-            const textoMotivacional = 
-                "Recuerda que planificar con tiempo reduce costos y estrés. " +
-                "Al tener tus artículos listos para la fecha deseada, " + 
-                "aseguras una mejor disponibilidad y un montaje más ágil. " +
-                "¡Adelántate y disfruta la experiencia!";
-
-            const textoCompleto = textoMotivacional + fechaTexto;
-            const lines = doc.splitTextToSize(textoCompleto, 500);
-            doc.text(lines, 40, 140);
-
-            // === 6) Recolectar artículos seleccionados ===
-            const tables = [
-                { id: "pinturasTable", name: "Pinturas" },
-                { id: "mobiliarioTable", name: "Mobiliario" },
-                { id: "accesoriosTable", name: "Accesorios" },
-                { id: "telasTable", name: "Telas" },
-                { id: "alfombrasTable", name: "Alfombras" }
-            ];
-
-            let currentY = 180;
-
-            tables.forEach(table => {
-                const tableRows = [];
-                const tableElement = document.getElementById(table.id);
-                const rows = tableElement.getElementsByTagName("tr");
-
-                for (let i = 1; i < rows.length; i++) {
-                    const checkbox = rows[i].getElementsByTagName("input")[0];
-                    if (checkbox && checkbox.checked) {
-                        const cells = rows[i].getElementsByTagName("td");
-                        const rowData = [];
-                        for (let j = 1; j < cells.length; j++) {
-                            rowData.push(cells[j].innerText);
-                        }
-                        tableRows.push(rowData);
-                    }
-                }
-
-                if (tableRows.length > 0) {
-                    // === 7) Dibujar la tabla ===
-                    doc.setFontSize(14);
-                    doc.setFont(undefined, "bold");
-                    doc.text(table.name, 40, currentY);
-                    currentY += 20;
-
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, "normal");
-
-                    tableRows.forEach((row) => {
-                        doc.text(row.join(" - "), 40, currentY);
-                        currentY += 20;
-                    });
-
-                    currentY += 10; // Espacio entre tablas
-                }
+            tableRows.forEach((row) => {
+                doc.text(row.join(" - "), 40, currentY);
+                currentY += 20;
             });
 
-            if (currentY === 180) {
-                alert("No has seleccionado ningún artículo.");
-                return;
-            }
-
-            // === 8) Tres líneas estéticas al final de la hoja ===
-            const line1 = pageHeight - 60;
-            const line2 = pageHeight - 55;
-            const line3 = pageHeight - 50;
-
-            // 1ra línea (#E2557B)
-            doc.setDrawColor(226, 85, 123);
-            doc.setLineWidth(2);
-            doc.line(40, line1, pageWidth - 40, line1);
-
-            // 2da línea (#0CA494)
-            doc.setDrawColor(12, 164, 148);
-            doc.line(40, line2, pageWidth - 40, line2);
-
-            // 3ra línea (#D6D234)
-            doc.setDrawColor(214, 210, 52);
-            doc.line(40, line3, pageWidth - 40, line3);
-
-            // === 9) Guardar PDF ===
-            doc.save("Inventario_HelloBalloons.pdf");
+            currentY += 10; // Espacio entre tablas
         }
+    });
+
+    if (currentY === textY + textHeight + 20) {
+        alert("No has seleccionado ningún artículo.");
+        return;
+    }
+
+    // === 8) Tres líneas estéticas al final de la hoja ===
+    const line1 = pageHeight - 60;
+    const line2 = pageHeight - 55;
+    const line3 = pageHeight - 50;
+
+    // 1ra línea (#E2557B)
+    doc.setDrawColor(226, 85, 123);
+    doc.setLineWidth(2);
+    doc.line(40, line1, pageWidth - 40, line1);
+
+    // 2da línea (#0CA494)
+    doc.setDrawColor(12, 164, 148);
+    doc.line(40, line2, pageWidth - 40, line2);
+
+    // 3ra línea (#D6D234)
+    doc.setDrawColor(214, 210, 52);
+    doc.line(40, line3, pageWidth - 40, line3);
+
+    // === 9) Guardar PDF ===
+    doc.save("Inventario_HelloBalloons.pdf");
+}
 
         /*
           Función auxiliar para convertir una URL de imagen en base64.
