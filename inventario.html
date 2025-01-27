@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hello Balloons - Inventario PDF</title>
+  <!-- Incluimos el script de jsPDF desde un CDN por simplicidad -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url('https://i.imgur.com/7y7PZ9i.jpeg');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+    }
+    .sidebar {
+        width: 250px;
+        background-color: rgba(226, 85, 123, 0.9);
+        color: white;
+        height: 100vh;
+        position: fixed;
+        padding-top: 20px;
+        text-align: center;
+    }
+    .logo {
+        display: block;
+        margin: 0 auto 15px;
+        width: 120px;
+        height: auto;
+    }
+    .sidebar h2 {
+        margin: 10px 0;
+    }
+    .sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .sidebar nav a {
+        color: white;
+        text-decoration: none;
+        padding: 10px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+    .sidebar nav a:hover {
+        background-color: #D6D234;
+        color: #000;
+    }
+    .menu-icon {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+    .content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+    .card {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h2 {
+        margin-bottom: 1rem;
+    }
+    .search-bar {
+        margin-bottom: 15px;
+        text-align: right;
+    }
+    .search-bar input {
+        padding: 8px;
+        font-size: 14px;
+        width: 250px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px; 
+    }
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+        white-space: nowrap;
+    }
+    th {
+        background-color: #0CA494;
+        color: white;
+    }
+    .color-box {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin-right: 10px;
+        border: 1px solid #000;
+    }
+    .back-to-top {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #0CA494;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    .back-to-top:hover {
+        background-color: #0b7f78;
+    }
+    /* -- Media Query para pantallas pequeñas -- */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: static;
+            padding-top: 10px;
+        }
+        .sidebar nav {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .sidebar nav.active {
+            display: flex;
+        }
+        .menu-icon {
+            display: block;
+        }
+        .content {
+            margin-left: 0;
+        }
+        .search-bar {
+            text-align: left;
+        }
+        .search-bar input {
+            width: 100%;
+        }
+    }
+    /* Sección para el input de fecha y botón */
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .actions input[type="date"] {
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .actions button {
+        background-color: #0CA494;
+        color: #fff;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    .actions button:hover {
+        background-color: #0b7f78;
+    }
+  </style>
+</head>
+<body>
+    <!-- Barra lateral -->
+    <div class="sidebar">
+        <img 
+          src="https://i.imgur.com/41t5f0K.png" 
+          alt="Hello Balloons Logo" 
+          class="logo"
+        >
+        <h2>Hello Balloons</h2>
+        <!-- Icono del menú para móviles -->
+        <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
+        <!-- Menú de navegación -->
+        <nav id="sidebarNav">
+            <a href="#pinturas">Pinturas</a>
+            <a href="#mobiliario">Mobiliario</a>
+            <a href="#accesorios">Accesorios</a>
+            <a href="#telas">Telas</a>
+            <a href="#alfombras">Alfombras</a>
+        </nav>
+    </div>
+    
+    <!-- Contenido principal -->
+    <div class="content">
+        <!-- Tabla de Pinturas -->
+        <div id="pinturas" class="card">
+            <h2>Inventario de Pinturas</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchPinturas" 
+                  placeholder="Buscar por nombre o código..." 
+                  onkeyup="filterTable('pinturasTable', 'searchPinturas')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="pinturasTable">
+                    <tr>
+                        <th></th> <!-- Columna para checkbox -->
+                        <th>Marca</th>
+                        <th>Código de Color</th>
+                        <th>Nombre del Color</th>
+                        <th>Base</th>
+                        <th>Cantidad</th>
+                    </tr>
+                    <!-- Datos de pinturas Renner -->
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1211-3</td>
+                        <td><div class="color-box" style="background-color: #f4d03f;"></div>Amarillo Pastel</td>
+                        <td>Agua</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1121-6</td>
+                        <td><div class="color-box" style="background-color: #8a9a5b;"></div>Verde Safari</td>
+                        <td>Agua</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>11-15</td>
+                        <td><div class="color-box" style="background-color: #76b583;"></div>Verde Shrek</td>
+                        <td>Agua</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1078-4</td>
+                        <td><div class="color-box" style="background-color: #c2b280;"></div>Beige Kangaroo</td>
+                        <td>Agua</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1235-5</td>
+                        <td><div class="color-box" style="background-color: #7ec8e3;"></div>Celeste Calipso</td>
+                        <td>Agua</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1244-3</td>
+                        <td><div class="color-box" style="background-color: #a2c4d9;"></div>Celeste Pastel Fuerte</td>
+                        <td>Agua</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1183-5</td>
+                        <td><div class="color-box" style="background-color: #ff77a9;"></div>Fucsia</td>
+                        <td>Agua</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1228-3</td>
+                        <td><div class="color-box" style="background-color: #7fffd4;"></div>Verde Agua</td>
+                        <td>Agua</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1184-3</td>
+                        <td><div class="color-box" style="background-color: #ffc0cb;"></div>Rosado Pastel</td>
+                        <td>Agua</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1252-5</td>
+                        <td><div class="color-box" style="background-color: #f8c8dc;"></div>Palo de Rosa</td>
+                        <td>Agua</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Renner</td>
+                        <td>1243-7</td>
+                        <td><div class="color-box" style="background-color: #0000ff;"></div>Azul Transformer</td>
+                        <td>Agua</td>
+                        <td>1</td>
+                    </tr>
+                    <!-- Datos de pinturas Coral -->
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Coral</td>
+                        <td>melindrosa</td>
+                        <td><div class="color-box" style="background-color: #f8c8dc;"></div>Palo de Rosa</td>
+                        <td>Agua</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Coral</td>
+                        <td>platina</td>
+                        <td><div class="color-box" style="background-color: #d3d3d3;"></div>Plomo</td>
+                        <td>Agua</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Coral</td>
+                        <td>violeta nobre</td>
+                        <td><div class="color-box" style="background-color: #dda0dd;"></div>Lila Pastel</td>
+                        <td>Agua</td>
+                        <td>1</td>
+                    </tr>
+                    <!-- Datos de pinturas Ribepar -->
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Ribepar</td>
+                        <td>verde folha</td>
+                        <td><div class="color-box" style="background-color: #228b22;"></div>Verde Hoja</td>
+                        <td>Pinto y Seco</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Ribepar</td>
+                        <td>ap 160</td>
+                        <td><div class="color-box" style="background-color: #0077be;"></div>Azul Sonic</td>
+                        <td>Agua</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Ribepar</td>
+                        <td>arena</td>
+                        <td><div class="color-box" style="background-color: #c2b280;"></div>Arena</td>
+                        <td>Standar</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Ribepar</td>
+                        <td>naranja</td>
+                        <td><div class="color-box" style="background-color: #ffa500;"></div>Naranja</td>
+                        <td>Standar</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Ribepar</td>
+                        <td>blanco nieve</td>
+                        <td><div class="color-box" style="background-color: #fffafa;"></div>Blanco Nieve</td>
+                        <td>Standar</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Ribepar</td>
+                        <td>verde oscuro</td>
+                        <td><div class="color-box" style="background-color: #006400;"></div>Verde Oscuro</td>
+                        <td>Standar</td>
+                        <td>1</td>
+                    </tr>
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Mobiliario -->
+        <div id="mobiliario" class="card">
+            <h2>Inventario de Mobiliario</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchMobiliario" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('mobiliarioTable', 'searchMobiliario')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="mobiliarioTable">
+                    <tr>
+                        <th></th> <!-- Columna para checkbox -->
+                        <th>Artículo</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                    </tr>
+                    <!-- Datos de mobiliario -->
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Cilindro Liso</td>
+                        <td>80 cm de altura y 30 cm de diámetro, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Cilindro Liso</td>
+                        <td>60 cm de altura y 30 cm de diámetro, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Cilindro Liso</td>
+                        <td>50 cm de altura y 30 cm de diámetro, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Mesa de Malla</td>
+                        <td>1 metro de ancho y 80 cm de alto, de fierro, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Panel Embarillado</td>
+                        <td>2 metros de alto, 1.20 m de ancho, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Panel Embarillado</td>
+                        <td>1.80 metros de alto, 1.00 m de ancho, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Panel Embarillado</td>
+                        <td>1.70 metros de alto, 80 cm de ancho, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Panel Embarillado</td>
+                        <td>1.75 metros de alto, 1.10 m de ancho, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Panel de Malla</td>
+                        <td>1.80 metros de alto, 1.10 m de ancho, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Portaregalos</td>
+                        <td>Blanco de madera, 80 cm de ancho, 40 cm de alto</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Portacanastas</td>
+                        <td>Blanco de madera, 1.60 m de alto</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Portacanastas</td>
+                        <td>Delgado de madera, 1.60 m de alto</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Portaaccesorios 3D</td>
+                        <td>Venesta, 1.70 m de alto, 1.30 m de ancho, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Panel Granja</td>
+                        <td>2.20 metros de alto, 1.20 m de ancho, personalizable</td>
+                        <td>1</td>
+                    </tr>
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Accesorios -->
+        <div id="accesorios" class="card">
+            <h2>Inventario de Accesorios</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchAccesorios" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('accesoriosTable', 'searchAccesorios')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="accesoriosTable">
+                    <tr>
+                        <th></th> <!-- Columna para checkbox -->
+                        <th>Artículo</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Flores</td>
+                        <td>Artificiales, varios colores</td>
+                        <td>200</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Cintas</td>
+                        <td>Satinadas, varios colores</td>
+                        <td>150</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Lazos</td>
+                        <td>Organza, varios colores</td>
+                        <td>100</td>
+                    </tr>
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Telas -->
+        <div id="telas" class="card">
+            <h2>Inventario de Telas</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchTelas" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('telasTable', 'searchTelas')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="telasTable">
+                    <tr>
+                        <th></th> <!-- Columna para checkbox -->
+                        <th>Artículo</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Tela Algodón</td>
+                        <td>Blanco, Verde</td>
+                        <td>60 metros</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Tela Seda</td>
+                        <td>Blanco, Rosa</td>
+                        <td>40 metros</td>
+                    </tr>
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Tabla de Alfombras -->
+        <div id="alfombras" class="card">
+            <h2>Inventario de Alfombras</h2>
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <input 
+                  type="text" 
+                  id="searchAlfombras" 
+                  placeholder="Buscar por nombre o descripción..." 
+                  onkeyup="filterTable('alfombrasTable', 'searchAlfombras')" 
+                />
+            </div>
+            <div class="table-responsive">
+                <table id="alfombrasTable">
+                    <tr>
+                        <th></th> <!-- Columna para checkbox -->
+                        <th>Artículo</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                    </tr>
+                    <!-- Datos de alfombras -->
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Roja</td>
+                        <td>2 m de ancho, 1 m de largo</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Azul</td>
+                        <td>2 m de ancho, 1 m de largo</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Celeste</td>
+                        <td>2 m de ancho, 1 m de largo</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Blanca</td>
+                        <td>2 m de ancho, 1 m de largo</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Rosada</td>
+                        <td>2 m de ancho, 1 m de largo</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Rosada</td>
+                        <td>1.5 m de ancho, 80 cm de largo</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Fucsia</td>
+                        <td>1.5 m de ancho, 80 cm de largo</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" /></td>
+                        <td>Alfombra Beige</td>
+                        <td>2 m de ancho, 1 m de largo</td>
+                        <td>4</td>
+                    </tr>
+                </table>
+            </div>
+            <!-- Botón "Volver al inicio" -->
+            <a href="#" class="back-to-top">Volver al inicio</a>
+        </div>
+
+        <!-- Acciones: fecha y botón para generar PDF -->
+        <div class="actions">
+            <label for="fecha">Fecha requerida:</label>
+            <input type="date" id="fecha">
+            <button onclick="generatePDF()">Generar PDF</button>
+        </div>
+    </div>
+
+    <script>
+        /*
+          Función para mostrar/ocultar el menú en dispositivos móviles
+        */
+        function toggleMenu() {
+            const nav = document.getElementById("sidebarNav");
+            nav.classList.toggle("active");
+        }
+
+        /*
+          Función para filtrar la tabla
+        */
+        function filterTable(tableId, searchInputId) {
+            const input = document.getElementById(searchInputId);
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById(tableId);
+            const rows = table.getElementsByTagName("tr");
+            
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                let match = false;
+                for (let j = 1; j < cells.length; j++) {
+                    const txtValue = cells[j].textContent || cells[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        match = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? "" : "none";
+            }
+        }
+
+        /*
+          Función para generar el PDF de los artículos seleccionados
+          usando la librería jsPDF
+        */
+        async function generatePDF() {
+            // Importamos las funciones necesarias de jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: "pt", format: "a4" });
+            
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            // === 1) Agregar LOGO a la izquierda ===
+            try {
+                const logoUrl = "https://i.imgur.com/41t5f0K.png";
+                const imgDataLogo = await getBase64FromUrl(logoUrl);
+                doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
+            } catch (err) {
+                console.log("No se pudo cargar el logo externamente:", err);
+            }
+
+            // === 2) Agregar la segunda imagen (misma altura y ancho) a la derecha ===
+            try {
+                const secondImgUrl = "https://i.imgur.com/iyWSuW2.jpeg";
+                const imgDataSecond = await getBase64FromUrl(secondImgUrl);
+                // Posicionamos a la derecha, mismo tamaño (80x80)
+                // Por ejemplo, 40 pt de margen derecho:
+                const xPos = pageWidth - 120 - 40; // 40 pts de margen + 80 de ancho
+                doc.addImage(imgDataSecond, "JPEG", xPos, 40, 80, 80);
+            } catch (err) {
+                console.log("No se pudo cargar la segunda imagen:", err);
+            }
+
+            // === 3) Título centrado y grande ===
+            doc.setFontSize(18);
+            doc.text(
+                "Inventario Seleccionado", // Título principal
+                pageWidth / 2,
+                90, 
+                { align: "center" }
+            );
+
+            // === 4) Subtítulo "Hello Balloons" ===
+            doc.setFontSize(14);
+            doc.text(
+                "Hello Balloons", // Subtítulo
+                pageWidth / 2,
+                110, 
+                { align: "center" }
+            );
+
+            // === 5) Texto motivacional + fecha ===
+            doc.setFontSize(12);
+            doc.setFont(undefined, "normal");
+
+            const fechaSeleccionada = document.getElementById("fecha").value;
+            const fechaTexto = fechaSeleccionada 
+                ? `\n\nFecha requerida: ${fechaSeleccionada}`
+                : "\n\n(Fecha no especificada)";
+
+            const textoMotivacional = 
+                "Recuerda que planificar con tiempo reduce costos y estrés. " +
+                "Al tener tus artículos listos para la fecha deseada, " + 
+                "aseguras una mejor disponibilidad y un montaje más ágil. " +
+                "¡Adelántate y disfruta la experiencia!";
+
+            const textoCompleto = textoMotivacional + fechaTexto;
+            const lines = doc.splitTextToSize(textoCompleto, 500);
+            doc.text(lines, 40, 140);
+
+            // === 6) Recolectar artículos seleccionados ===
+            const tables = [
+                { id: "pinturasTable", name: "Pinturas" },
+                { id: "mobiliarioTable", name: "Mobiliario" },
+                { id: "accesoriosTable", name: "Accesorios" },
+                { id: "telasTable", name: "Telas" },
+                { id: "alfombrasTable", name: "Alfombras" }
+            ];
+
+            let currentY = 180;
+
+            tables.forEach(table => {
+                const tableRows = [];
+                const tableElement = document.getElementById(table.id);
+                const rows = tableElement.getElementsByTagName("tr");
+
+                for (let i = 1; i < rows.length; i++) {
+                    const checkbox = rows[i].getElementsByTagName("input")[0];
+                    if (checkbox && checkbox.checked) {
+                        const cells = rows[i].getElementsByTagName("td");
+                        const rowData = [];
+                        for (let j = 1; j < cells.length; j++) {
+                            rowData.push(cells[j].innerText);
+                        }
+                        tableRows.push(rowData);
+                    }
+                }
+
+                if (tableRows.length > 0) {
+                    // === 7) Dibujar la tabla ===
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, "bold");
+                    doc.text(table.name, 40, currentY);
+                    currentY += 20;
+
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, "normal");
+
+                    tableRows.forEach((row) => {
+                        doc.text(row.join(" - "), 40, currentY);
+                        currentY += 20;
+                    });
+
+                    currentY += 10; // Espacio entre tablas
+                }
+            });
+
+            if (currentY === 180) {
+                alert("No has seleccionado ningún artículo.");
+                return;
+            }
+
+            // === 8) Tres líneas estéticas al final de la hoja ===
+            const line1 = pageHeight - 60;
+            const line2 = pageHeight - 55;
+            const line3 = pageHeight - 50;
+
+            // 1ra línea (#E2557B)
+            doc.setDrawColor(226, 85, 123);
+            doc.setLineWidth(2);
+            doc.line(40, line1, pageWidth - 40, line1);
+
+            // 2da línea (#0CA494)
+            doc.setDrawColor(12, 164, 148);
+            doc.line(40, line2, pageWidth - 40, line2);
+
+            // 3ra línea (#D6D234)
+            doc.setDrawColor(214, 210, 52);
+            doc.line(40, line3, pageWidth - 40, line3);
+
+            // === 9) Guardar PDF ===
+            doc.save("Inventario_HelloBalloons.pdf");
+        }
+
+        /*
+          Función auxiliar para convertir una URL de imagen en base64.
+        */
+        async function getBase64FromUrl(url) {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+    </script>
+</body>
+</html>
