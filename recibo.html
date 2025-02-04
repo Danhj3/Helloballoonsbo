@@ -3,52 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <title>Recibo Hello Balloons</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
+    /* Estilos generales para que sea responsivo */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      margin: 0; 
-      padding: 0; 
       background-color: #f9f9f9;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh; /* que ocupe pantalla completa */
+      padding: 10px; /* espacio lateral en móviles */
     }
+
     .recibo {
       background-color: #fff;
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      width: 500px; /* Más ancho para que se vea grande en la web */
+      /* Ancho adaptable */
+      width: 90%;
+      max-width: 500px; /* no se hace más grande de 500px */
       text-align: center;
+      margin: 0 auto;
     }
-    .recibo .logo {
+
+    .logo {
       width: 100px;
       margin-bottom: 15px;
     }
-    .recibo h1 {
+
+    h1 {
       font-size: 24px;
       color: #E2557B;
       margin-bottom: 20px;
     }
-    .recibo .info {
+
+    .info {
       text-align: left;
       margin: 20px 0;
     }
-    .recibo .info label {
+
+    .info label {
       color: #0CA494;
       font-weight: bold;
       display: block;
       margin-bottom: 5px;
     }
-    .recibo .info input,
-    .recibo .info select {
+
+    .info input,
+    .info select {
       width: 100%;
       padding: 8px;
       margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      font-size: 14px;
     }
+
     .boton {
       background-color: #0CA494;
       color: #fff;
@@ -57,10 +75,59 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
+      margin-top: 10px;
     }
+
     .boton:hover {
       background-color: #0b7f78;
     }
+
+    /* Si quisieras justificar texto dentro del formulario,
+       podrías usar una clase .texto-justificado, por ejemplo: 
+       .texto-justificado { text-align: justify; }
+       y aplicarla a ciertos <p> o contenedores.
+    */
+
+    /* Sección de redes sociales */
+    .redes {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px; /* separación entre iconos y texto */
+      margin-top: 15px;
+    }
+    .redes a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+    }
+    .icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Ajuste de tipografías y tamaños en dispositivos pequeños */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 20px;
+      }
+      .info label {
+        font-size: 14px;
+      }
+      .info input,
+      .info select {
+        font-size: 13px;
+      }
+      .boton {
+        font-size: 14px;
+        padding: 8px 15px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -96,6 +163,20 @@
   </div>
   
   <button class="boton" onclick="generarRecibo()">Generar Recibo</button>
+
+  <!-- Redes sociales con iconos -->
+  <div class="redes">
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/helloballoonsbo" target="_blank" rel="noopener">
+      <img class="icon" src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook Icon">
+      @helloballoonsbo
+    </a>
+    <!-- Instagram -->
+    <a href="https://www.instagram.com/helloballoonsbo" target="_blank" rel="noopener">
+      <img class="icon" src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram Icon">
+      @helloballoonsbo
+    </a>
+  </div>
 </div>
 
 <!-- Librería jsPDF -->
@@ -115,7 +196,7 @@
       return;
     }
 
-    // PDF con tamaño personalizado (tipo "volante")
+    // PDF con tamaño personalizado (tipo "volante").
     // 350 pt de ancho x 250 pt de alto (aprox.)
     const doc = new jsPDF({
       orientation: "portrait",
@@ -148,8 +229,7 @@
     doc.setTextColor(12, 164, 148); // Verde agua
     doc.text("Hello Balloons", pageWidth / 2, 50, { align: "center" });
 
-    // Línea estética (3 espacios más abajo)  
-    // El subtítulo está en Y=50, sumamos ~18
+    // Línea estética (espacios más abajo)
     doc.setDrawColor(226, 85, 123);
     doc.setLineWidth(1);
     doc.line(20, 68, pageWidth - 20, 68);
@@ -160,19 +240,16 @@
     doc.setTextColor(50, 50, 50);
 
     let currentY = 100;
-
     const tipoDecoracion = formatearTipo(tipo);
 
-    // Texto principal con un estilo más amable y profesional
+    // Redacción más amable y profesional, con “justificación” usando splitTextToSize
     let textoRecibo = 
-      `La presente confirma que, en la fecha ${fecha}, ` +
-      `la Sra./Sr. ${cliente} efectuó el pago de Bs. ${monto} ` +
-      `por una ${tipoDecoracion} de Hello Balloons.\n\n` +
-      `Confirmamos la recepción satisfactoria de este monto.` +
-      `\n\n` +
+      `La presente confirma que, en la fecha ${fecha}, la Sra./Sr. ${cliente} ` +
+      `efectuó el pago de Bs. ${monto} por una ${tipoDecoracion} de Hello Balloons.\n\n` +
+      `Confirmamos la recepción satisfactoria de este monto.\n\n` +
       `Recibí conforme: ${firma}`;
 
-    // Separamos las líneas para mejor ajuste en el PDF pequeño
+    // Dividir texto para ajustarlo al ancho
     const lineas = doc.splitTextToSize(textoRecibo, pageWidth - 40);
     doc.text(lineas, 20, currentY);
     currentY += lineas.length * 14 + 10;
