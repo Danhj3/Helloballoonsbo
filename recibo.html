@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Recibo Pequeño - Hello Balloons</title>
+  <meta charset="UTF-8">
+  <title>Recibo Hello Balloons</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,24 +16,24 @@
     }
     .recibo {
       background-color: #fff;
-      padding: 20px;
+      padding: 30px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      width: 300px;
+      width: 500px; /* Más ancho para que se vea grande en la web */
       text-align: center;
     }
     .recibo .logo {
-      width: 80px;
+      width: 100px;
       margin-bottom: 15px;
     }
     .recibo h1 {
-      font-size: 20px;
+      font-size: 24px;
       color: #E2557B;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
     .recibo .info {
       text-align: left;
-      margin: 10px 0 20px;
+      margin: 20px 0;
     }
     .recibo .info label {
       color: #0CA494;
@@ -44,21 +44,21 @@
     .recibo .info input,
     .recibo .info select {
       width: 100%;
-      padding: 5px;
-      margin-bottom: 10px;
+      padding: 8px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-    .recibo .boton {
+    .boton {
       background-color: #0CA494;
       color: #fff;
       border: none;
-      padding: 8px 15px;
+      padding: 10px 20px;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 16px;
     }
-    .recibo .boton:hover {
+    .boton:hover {
       background-color: #0b7f78;
     }
   </style>
@@ -66,7 +66,7 @@
 <body>
 
 <div class="recibo">
-  <img src="https://i.imgur.com/41t5f0K.png" alt="Hello Balloons Logo" class="logo" />
+  <img src="https://i.imgur.com/41t5f0K.png" alt="Hello Balloons Logo" class="logo">
   <h1>Recibo de Decoración</h1>
   
   <div class="info">
@@ -85,7 +85,7 @@
       <option value="evento_corporativo">Evento Corporativo</option>
     </select>
 
-    <label for="monto">Costo:</label>
+    <label for="monto">Costo (Bs.):</label>
     <input type="number" id="monto" placeholder="Ej. 1200" required>
 
     <label for="cliente">Cliente:</label>
@@ -115,11 +115,12 @@
       return;
     }
 
-    // PDF en tamaño A5 (más pequeño que A4)
+    // PDF con tamaño personalizado (tipo "volante")
+    // 350 pt de ancho x 500 pt de alto (aprox.)
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "pt",
-      format: "a5" 
+      format: [350, 500]
     });
 
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -129,78 +130,78 @@
     try {
       const logoUrl = "https://i.imgur.com/41t5f0K.png";
       const imgDataLogo = await getBase64FromUrl(logoUrl);
-      doc.addImage(imgDataLogo, "PNG", 40, 30, 60, 60);
+      // Ajustamos para que quede proporcional en un volante pequeño
+      doc.addImage(imgDataLogo, "PNG", 20, 20, 60, 60);
     } catch (err) {
       console.log("No se pudo cargar el logo:", err);
     }
 
     // --- Título ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
+    doc.setFont("times", "bold");
+    doc.setFontSize(14);
     doc.setTextColor(226, 85, 123); // Rosa
-    doc.text("Recibo de Decoración", pageWidth / 2, 50, { align: "center" });
+    doc.text("Recibo de Decoración", pageWidth / 2, 35, { align: "center" });
 
     // --- Subtítulo Hello Balloons ---
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setFont("times", "normal");
     doc.setTextColor(12, 164, 148); // Verde agua
-    doc.text("Hello Balloons", pageWidth / 2, 68, { align: "center" });
+    doc.text("Hello Balloons", pageWidth / 2, 50, { align: "center" });
 
-    // Línea estética debajo del logo/títulos
+    // Línea estética (3 espacios más abajo)  
+    // El subtítulo está en Y=50, sumamos ~18
     doc.setDrawColor(226, 85, 123);
     doc.setLineWidth(1);
-    doc.line(30, 80, pageWidth - 30, 80);
+    doc.line(20, 68, pageWidth - 20, 68);
 
     // --- Texto principal del Recibo ---
-    doc.setFont("helvetica", "normal");
+    doc.setFont("times", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(50, 50, 50);
 
-    // Posición de inicio para el texto
-    let currentY = 120;
+    let currentY = 100;
 
-    // Redactamos el texto genérico
-    // "En (fecha), (cliente) realizó la transferencia de $ (monto) por una (tipo) de Hello Balloons. Recibí conforme: (firma)"
     const tipoDecoracion = formatearTipo(tipo);
-    const textoRecibo = 
-      `En la fecha ${fecha}, ${cliente} realizó el pago de $${monto} ` +
+
+    // Texto principal con un estilo más amable y profesional
+    let textoRecibo = 
+      `La presente confirma que, en la fecha ${fecha}, ` +
+      `la Sra./Sr. ${cliente} efectuó el pago de Bs. ${monto} ` +
       `por una ${tipoDecoracion} de Hello Balloons.\n\n` +
+      `Confirmamos la recepción satisfactoria de este monto.` +
+      `\n\n` +
       `Recibí conforme: ${firma}`;
 
-    // Imprimimos
-    const lineas = doc.splitTextToSize(textoRecibo, pageWidth - 60);
-    doc.text(lineas, 30, currentY);
+    // Separamos las líneas para mejor ajuste en el PDF pequeño
+    const lineas = doc.splitTextToSize(textoRecibo, pageWidth - 40);
+    doc.text(lineas, 20, currentY);
+    currentY += lineas.length * 14 + 10;
 
-    // Aumentamos la posición Y en base al texto impreso
-    currentY += lineas.length * 14 + 20;
+    // --- Mensaje breve de agradecimiento ---
+    doc.setFont("times", "italic");
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
 
-    // --- Mensaje de agradecimiento (antes estaba en el QR) ---
     const mensajeAgradecimiento =
-      "¡Gracias por confiar en Hello Balloons! " +
-      "Tu preferencia nos motiva a seguir llenando de color y alegría " +
-      "cada celebración. Con tu apoyo, creamos recuerdos memorables " +
-      "y fortalecemos lazos de cariño. " +
-      "¡Sigamos celebrando la vida, porque cada momento especial " +
-      "merece un toque de magia!";
+      "Agradecemos su preferencia. Seguiremos llenando cada celebración " +
+      "de creatividad, alegría y un servicio de primera.";
 
-    const lineasAgradecimiento = doc.splitTextToSize(mensajeAgradecimiento, pageWidth - 60);
-    doc.setFont("helvetica", "italic");
-    doc.setTextColor(60, 60, 60);
-    doc.text(lineasAgradecimiento, 30, currentY);
+    const agradecimientoLines = doc.splitTextToSize(mensajeAgradecimiento, pageWidth - 40);
+    doc.text(agradecimientoLines, 20, currentY);
 
     // --- Líneas decorativas al final ---
     doc.setDrawColor(226, 85, 123);
     doc.setLineWidth(2);
-    doc.line(30, pageHeight - 50, pageWidth - 30, pageHeight - 50);
+    doc.line(20, pageHeight - 50, pageWidth - 20, pageHeight - 50);
 
     doc.setDrawColor(12, 164, 148);
-    doc.line(30, pageHeight - 44, pageWidth - 30, pageHeight - 44);
+    doc.line(20, pageHeight - 44, pageWidth - 20, pageHeight - 44);
 
     doc.setDrawColor(214, 210, 52);
-    doc.line(30, pageHeight - 38, pageWidth - 30, pageHeight - 38);
+    doc.line(20, pageHeight - 38, pageWidth - 20, pageHeight - 38);
 
     // --- Guardar PDF ---
-    doc.save("Recibo_HelloBalloons_A5.pdf");
+    doc.save("Recibo_HelloBalloons_Volante.pdf");
   }
 
   /*
@@ -229,7 +230,7 @@
       case "revelacion": return "Decoración Revelación";
       case "despedida_soltera": return "Despedida de Soltera";
       case "evento_corporativo": return "Evento Corporativo";
-      default: return tipo;
+      default: return "Decoración Especial";
     }
   }
 </script>
