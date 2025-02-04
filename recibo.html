@@ -27,9 +27,10 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
       /* Ancho adaptable */
       width: 90%;
-      max-width: 500px; /* no se hace más grande de 500px en desktop */
+      max-width: 500px;
       text-align: center;
       margin: 0 auto;
     }
@@ -90,6 +91,7 @@
       gap: 15px; /* separación entre iconos y texto */
       margin-top: 15px;
     }
+
     .redes a {
       text-decoration: none;
       color: #333;
@@ -99,6 +101,7 @@
       gap: 5px;
       font-size: 14px;
     }
+
     .icon {
       width: 24px;
       height: 24px;
@@ -126,23 +129,30 @@
 <body>
 
 <div class="recibo">
+  <!-- Logo y Título de la página web -->
   <img src="https://i.imgur.com/41t5f0K.png" alt="Hello Balloons Logo" class="logo">
   <h1>Recibo de Decoración</h1>
   
   <div class="info">
+    <!-- Campo para el número de recibo -->
+    <label for="numeroRecibo">N° de Recibo:</label>
+    <input type="text" id="numeroRecibo" placeholder="Ej. 001" required>
+
+    <!-- Resto de campos -->
     <label for="fecha">Fecha:</label>
     <input type="date" id="fecha" required>
 
     <label for="tipo">Tipo de Decoración:</label>
     <select id="tipo" required>
       <option value="" disabled selected>Selecciona una opción</option>
-      <option value="baby_shower">Baby Shower</option>
-      <option value="bautizo">Bautizo</option>
-      <option value="cumpleanos">Cumpleaños</option>
-      <option value="graduacion">Graduación</option>
-      <option value="revelacion">Revelación</option>
-      <option value="despedida_soltera">Despedida de Soltera</option>
-      <option value="evento_corporativo">Evento Corporativo</option>
+      <option value="baby_shower">decoración de Baby Shower</option>
+      <option value="bautizo">decoración de Bautizo</option>
+      <option value="cumpleanos">decoración de Cumpleaños</option>
+      <option value="graduacion">decoración de Graduación</option>
+      <option value="revelacion">decoración de Revelación de sexo</option>
+      <option value="despedida_soltera">decoración de Despedida de Soltera</option>
+      <option value="evento_corporativo">decoración de Evento Corporativo</option>
+      <option value="carros">decoración de carros</option>
     </select>
 
     <label for="monto">Costo (Bs.):</label>
@@ -155,6 +165,7 @@
     <input type="text" id="firma" value="Jennifer Arredondo Villagómez" required>
   </div>
   
+  <!-- Botón para generar el PDF -->
   <button class="boton" onclick="generarRecibo()">Generar Recibo</button>
 
   <!-- Redes sociales con iconos -->
@@ -178,22 +189,20 @@
   const { jsPDF } = window.jspdf;
 
   async function generarRecibo() {
+    const numeroRecibo = document.getElementById('numeroRecibo').value;
     const fecha = document.getElementById('fecha').value;
     const tipo = document.getElementById('tipo').value;
     const monto = document.getElementById('monto').value;
     const cliente = document.getElementById('cliente').value;
     const firma = document.getElementById('firma').value;
 
-    if (!fecha || !tipo || !monto || !cliente || !firma) {
+    // Validación de campos
+    if (!numeroRecibo || !fecha || !tipo || !monto || !cliente || !firma) {
       alert("Por favor, complete todos los campos.");
       return;
     }
 
-    /*
-     * Creamos el PDF en tamaño personalizado (350 pt x 300 pt)
-     * para que sea un volante lo suficientemente alto
-     * evitando que el logo y la línea se sobrepongan.
-     */
+    // PDF en tamaño personalizado (350 pt x 300 pt), tipo volante
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "pt",
@@ -203,69 +212,110 @@
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // --- LOGO ---
+    // Convertir el logo a base64 para usarlo como marca de agua
+    let logoBase64;
     try {
-      const logoUrl = "https://i.imgur.com/41t5f0K.png";
-      const imgDataLogo = await getBase64FromUrl(logoUrl);
-      // Ajustamos para no ocupar tanto espacio
-      doc.addImage(imgDataLogo, "PNG", 20, 20, 40, 40);
+      logoBase64 = await getBase64FromUrl("https://i.imgur.com/41t5f0K.png");
     } catch (err) {
       console.log("No se pudo cargar el logo:", err);
     }
 
-    // --- TÍTULO PRINCIPAL ---
+    // --- Marca de agua (logo grande con opacidad) ---
+    // Intentamos usar setGState si está disponible (jsPDF >= 2.5 con soporte).
+    // Caso contrario, se verá el logo en color normal.
+    if (logoBase64) {
+      try {
+        doc.setGState(new doc.GState({ opacity: 0.1 })); 
+      } catch(e) {
+        // Si no funciona la opacidad, simplemente se ignora
+      }
+      // Centrar el logo en la página, más grande
+      doc.addImage(logoBase64, "PNG",
+        pageWidth/2 - 80, // x
+        pageHeight/2 - 80, // y
+        160, // width
+        160 // height
+      );
+      // Restablecemos la opacidad al 100% para el contenido
+      try {
+        doc.setGState(new doc.GState({ opacity: 1 }));
+      } catch(e) {}
+    }
+
+    // --- Encabezado: Nº de Recibo ---
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Recibo N°: ${numeroRecibo}`, pageWidth / 2, 30, { align: "center" });
+
+    // --- Logo Pequeño en la Esquina Superior Izquierda ---
+    if (logoBase64) {
+      doc.addImage(logoBase64, "PNG", 20, 10, 30, 30);
+    }
+
+    // --- Título Principal ---
     doc.setFont("times", "bold");
     doc.setFontSize(14);
     doc.setTextColor(226, 85, 123); // Rosa
-    doc.text("Recibo de Decoración", pageWidth / 2, 70, { align: "center" });
+    doc.text("Recibo de Decoración", pageWidth / 2, 55, { align: "center" });
 
-    // --- SUBTÍTULO HELLO BALLOONS ---
+    // --- Subtítulo Hello Balloons ---
     doc.setFontSize(10);
     doc.setFont("times", "normal");
     doc.setTextColor(12, 164, 148); // Verde agua
-    doc.text("Hello Balloons", pageWidth / 2, 85, { align: "center" });
+    doc.text("Hello Balloons", pageWidth / 2, 70, { align: "center" });
 
-    // --- LÍNEA DECORATIVA BAJO EL SUBTÍTULO ---
+    // --- Línea decorativa debajo del subtítulo ---
     doc.setDrawColor(226, 85, 123);
     doc.setLineWidth(1);
-    // Colocamos la línea un poco más abajo para no chocar con el texto
-    doc.line(20, 100, pageWidth - 20, 100);
+    doc.line(20, 80, pageWidth - 20, 80);
 
-    // --- TEXTO PRINCIPAL DEL RECIBO ---
+    // --- Texto Principal del Recibo ---
     doc.setFont("times", "normal");
     doc.setFontSize(12);
     doc.setTextColor(50, 50, 50);
 
-    let currentY = 125; // empezamos debajo de la línea
+    let currentY = 105; // posición inicial del texto
 
+    // Formatear el tipo de decoración
     const tipoDecoracion = formatearTipo(tipo);
 
-    // Redacción prolija, sin redundancias
-    let textoRecibo = 
-      `La presente constancia deja en claro que el ${fecha}, ` +
-      `${cliente} realizó el pago total de Bs. ${monto} ` +
-      `por la ${tipoDecoracion} contratada con Hello Balloons.\n\n` +
-      `Con este documento, confirmamos la recepción satisfactoria ` +
-      `de dicho monto.\n\nRecibí conforme: ${firma}`;
+    // Coste con dos decimales para añadir (Bs. XXXX.XX/100)
+    const montoTexto = parseFloat(monto).toFixed(2);
+    // Construimos la parte final: " (Bs. 1200.00/100)" 
+    const parentesisCosto = ` (Bs. ${montoTexto}/100)`;
 
-    // Partimos el texto para “justificar” en lo posible
-    const lineas = doc.splitTextToSize(textoRecibo, pageWidth - 40);
-    doc.text(lineas, 20, currentY);
-    currentY += lineas.length * 14 + 10;
+    /* 
+       Estructura del texto:
+       "El día [fecha], [cliente] efectuó el pago de Bs. [monto] (Bs. XX.XX/100) 
+        por la [tipoDecoracion], contratada con la Empresa Hello Balloons.
+        Confirmamos la recepción satisfactoria de dicho monto.
 
-    // --- MENSAJE DE AGRADECIMIENTO ---
+        Recibí conforme: [firma]
+    */
+    const textoPrincipal =
+      `El día ${fecha}, ${cliente} efectuó el pago de Bs. ${monto}${parentesisCosto} ` +
+      `por la ${tipoDecoracion}, contratada con la Empresa Hello Balloons.\n\n` +
+      `Confirmamos la recepción satisfactoria de dicho monto.\n\n` +
+      `Recibí conforme: ${firma}`;
+
+    // Partir el texto para “justificar”
+    const lineasTexto = doc.splitTextToSize(textoPrincipal, pageWidth - 40);
+    doc.text(lineasTexto, 20, currentY);
+    currentY += lineasTexto.length * 14 + 10;
+
+    // --- Mensaje de Agradecimiento ---
     doc.setFont("times", "italic");
     doc.setFontSize(11);
     doc.setTextColor(80, 80, 80);
 
     const mensajeAgradecimiento =
-      "Agradecemos enormemente tu confianza. Seguiremos trabajando " +
-      "para llenar cada momento de color y alegría.";
+      "¡Gracias por elegirnos! Seguiremos trabajando para que cada detalle " +
+      "sea una experiencia llena de color y alegría.";
+    const lineasAgradecimiento = doc.splitTextToSize(mensajeAgradecimiento, pageWidth - 40);
+    doc.text(lineasAgradecimiento, 20, currentY);
 
-    const agradecimientoLines = doc.splitTextToSize(mensajeAgradecimiento, pageWidth - 40);
-    doc.text(agradecimientoLines, 20, currentY);
-
-    // --- LÍNEAS DECORATIVAS AL FINAL ---
+    // --- Líneas decorativas al final ---
     doc.setDrawColor(226, 85, 123);
     doc.setLineWidth(2);
     doc.line(20, pageHeight - 50, pageWidth - 20, pageHeight - 50);
@@ -276,8 +326,8 @@
     doc.setDrawColor(214, 210, 52);
     doc.line(20, pageHeight - 38, pageWidth - 20, pageHeight - 38);
 
-    // --- GUARDAR PDF ---
-    doc.save("Recibo_HelloBalloons_Volante.pdf");
+    // --- Guardar PDF ---
+    doc.save(`Recibo_HelloBalloons_${numeroRecibo}.pdf`);
   }
 
   /*
@@ -299,14 +349,15 @@
   */
   function formatearTipo(tipo) {
     switch (tipo) {
-      case "baby_shower": return "Decoración Baby Shower";
-      case "bautizo": return "Decoración Bautizo";
-      case "cumpleanos": return "Decoración Cumpleaños";
-      case "graduacion": return "Decoración Graduación";
-      case "revelacion": return "Decoración Revelación";
-      case "despedida_soltera": return "Despedida de Soltera";
-      case "evento_corporativo": return "Evento Corporativo";
-      default: return "Decoración Especial";
+      case "baby_shower": return "decoración de Baby Shower";
+      case "bautizo": return "decoración de Bautizo";
+      case "cumpleanos": return "decoración de Cumpleaños";
+      case "graduacion": return "decoración de Graduación";
+      case "revelacion": return "decoración de Revelación de sexo";
+      case "despedida_soltera": return "decoración de Despedida de Soltera";
+      case "evento_corporativo": return "decoración de Evento Corporativo";
+      case "carros": return "decoración de carros";
+      default: return "decoración especial";
     }
   }
 </script>
