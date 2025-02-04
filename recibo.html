@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recibo de Decoración - Hello Balloons</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .recibo {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 400px;
+        text-align: center;
+    }
+    .recibo h1 {
+        font-size: 24px;
+        color: #E2557B;
+        margin-bottom: 20px;
+    }
+    .recibo .logo {
+        width: 100px;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    .recibo .info {
+        text-align: left;
+        margin-bottom: 20px;
+    }
+    .recibo .info label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #0CA494;
+    }
+    .recibo .info input,
+    .recibo .info select {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    .recibo .firma {
+        margin-top: 20px;
+        border-top: 2px solid #E2557B;
+        padding-top: 10px;
+    }
+    .recibo .firma p {
+        font-size: 14px;
+        color: #555;
+    }
+    .recibo .firma input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+    .recibo .boton {
+        background-color: #0CA494;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+    .recibo .boton:hover {
+        background-color: #0b7f78;
+    }
+  </style>
+</head>
+<body>
+    <div class="recibo">
+        <img src="https://i.imgur.com/41t5f0K.png" alt="Hello Balloons Logo" class="logo">
+        <h1>Recibo de Decoración</h1>
+        <div class="info">
+            <label for="fecha">Fecha:</label>
+            <input type="date" id="fecha" required>
+
+            <label for="tipo">Tipo de Decoración:</label>
+            <select id="tipo" required>
+                <option value="baby_shower">Decoración Baby Shower</option>
+                <option value="bautizo">Decoración Bautizo</option>
+                <option value="cumpleanos">Decoración Cumpleaños</option>
+                <option value="graduacion">Decoración Graduación</option>
+                <option value="revelacion">Decoración Revelación</option>
+            </select>
+
+            <label for="monto">Monto del Costo:</label>
+            <input type="number" id="monto" placeholder="Ingrese el monto" required>
+
+            <label for="cliente">Nombre del Cliente:</label>
+            <input type="text" id="cliente" placeholder="Nombre del cliente" required>
+        </div>
+        <div class="firma">
+            <p>Recibí conforme:</p>
+            <input type="text" id="firma" placeholder="Jennifer Arredondo Villagómez" required>
+        </div>
+        <button class="boton" onclick="generarRecibo()">Generar Recibo</button>
+    </div>
+
+    <script>
+        function generarRecibo() {
+            const fecha = document.getElementById('fecha').value;
+            const tipo = document.getElementById('tipo').value;
+            const monto = document.getElementById('monto').value;
+            const cliente = document.getElementById('cliente').value;
+            const firma = document.getElementById('firma').value;
+
+            if (fecha && tipo && monto && cliente && firma) {
+                alert(`Recibo generado:\nFecha: ${fecha}\nTipo: ${tipo}\nMonto: $${monto}\nCliente: ${cliente}\nFirma: ${firma}`);
+            } else {
+                alert('Por favor, complete todos los campos.');
+            }
+        }
+    </script>
+</body>
+</html>
