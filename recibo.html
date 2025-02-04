@@ -114,19 +114,104 @@
         <button class="boton" onclick="generarRecibo()">Generar Recibo</button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        function generarRecibo() {
+        const { jsPDF } = window.jspdf;
+
+        async function generarRecibo() {
             const fecha = document.getElementById('fecha').value;
             const tipo = document.getElementById('tipo').value;
             const monto = document.getElementById('monto').value;
             const cliente = document.getElementById('cliente').value;
             const firma = document.getElementById('firma').value;
 
-            if (fecha && tipo && monto && cliente && firma) {
-                alert(`Recibo generado:\nFecha: ${fecha}\nTipo: ${tipo}\nMonto: $${monto}\nCliente: ${cliente}\nFirma: ${firma}`);
-            } else {
+            if (!fecha || !tipo || !monto || !cliente || !firma) {
                 alert('Por favor, complete todos los campos.');
+                return;
             }
+
+            const doc = new jsPDF({ unit: "pt", format: "a4" });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            // === 1) Agregar LOGO a la izquierda ===
+            try {
+                const logoUrl = "https://i.imgur.com/41t5f0K.png";
+                const imgDataLogo = await getBase64FromUrl(logoUrl);
+                doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
+            } catch (err) {
+                console.log("No se pudo cargar el logo externamente:", err);
+            }
+
+            // === 2) Título centrado y grande ===
+            doc.setFontSize(18);
+            doc.text(
+                "Recibo de Decoración", // Título principal
+                pageWidth / 2,
+                90, 
+                { align: "center" }
+            );
+
+            // === 3) Subtítulo "Hello Balloons" ===
+            doc.setFontSize(14);
+            doc.text(
+                "Hello Balloons", // Subtítulo
+                pageWidth / 2,
+                110, 
+                { align: "center" }
+            );
+
+            // === 4) Información del recibo ===
+            doc.setFontSize(12);
+            doc.setFont(undefined, "normal");
+
+            const fechaTexto = `Fecha: ${fecha}`;
+            const tipoTexto = `Tipo de Decoración: ${tipo}`;
+            const montoTexto = `Monto: $${monto}`;
+            const clienteTexto = `Cliente: ${cliente}`;
+            const firmaTexto = `Firma: ${firma}`;
+
+            const textoCompleto = [fechaTexto, tipoTexto, montoTexto, clienteTexto, firmaTexto];
+            const textY = 140; // Posición inicial del texto
+
+            textoCompleto.forEach((line, index) => {
+                doc.text(line, 40, textY + (index * 20));
+            });
+
+            // === 5) Tres líneas estéticas al final de la hoja ===
+            const line1 = pageHeight - 60;
+            const line2 = pageHeight - 55;
+            const line3 = pageHeight - 50;
+
+            // 1ra línea (#E2557B)
+            doc.setDrawColor(226, 85, 123);
+            doc.setLineWidth(2);
+            doc.line(40, line1, pageWidth - 40, line1);
+
+            // 2da línea (#0CA494)
+            doc.setDrawColor(12, 164, 148);
+            doc.line(40, line2, pageWidth - 40, line2);
+
+            // 3ra línea (#D6D234)
+            doc.setDrawColor(214, 210, 52);
+            doc.line(40, line3, pageWidth - 40, line3);
+
+            // === 6) Guardar PDF ===
+            doc.save("Recibo_HelloBalloons.pdf");
+        }
+
+        /*
+          Función auxiliar para convertir una URL de imagen en base64.
+        */
+        async function getBase64FromUrl(url) {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
     </script>
 </body>
