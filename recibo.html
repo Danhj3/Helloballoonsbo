@@ -212,7 +212,7 @@
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Convertir el logo a base64 para usarlo como marca de agua
+    // Convertir el logo a base64 para usarlo en el PDF
     let logoBase64;
     try {
       logoBase64 = await getBase64FromUrl("https://i.imgur.com/41t5f0K.png");
@@ -221,20 +221,20 @@
     }
 
     // --- Marca de agua (logo grande con opacidad) ---
-    // Intentamos usar setGState si está disponible (jsPDF >= 2.5 con soporte).
-    // Caso contrario, se verá el logo en color normal.
     if (logoBase64) {
       try {
         doc.setGState(new doc.GState({ opacity: 0.1 })); 
       } catch(e) {
-        // Si no funciona la opacidad, simplemente se ignora
+        // Si no funciona la opacidad, se ignora
       }
       // Centrar el logo en la página, más grande
-      doc.addImage(logoBase64, "PNG",
+      doc.addImage(
+        logoBase64,
+        "PNG",
         pageWidth/2 - 80, // x
         pageHeight/2 - 80, // y
-        160, // width
-        160 // height
+        160,
+        160
       );
       // Restablecemos la opacidad al 100% para el contenido
       try {
@@ -250,6 +250,7 @@
 
     // --- Logo Pequeño en la Esquina Superior Izquierda ---
     if (logoBase64) {
+      // Tamaño reducido (30x30)
       doc.addImage(logoBase64, "PNG", 20, 10, 30, 30);
     }
 
@@ -270,31 +271,36 @@
     doc.setLineWidth(1);
     doc.line(20, 80, pageWidth - 20, 80);
 
-    // --- Texto Principal del Recibo ---
+    // --- TEXTO PRINCIPAL DEL RECIBO ---
     doc.setFont("times", "normal");
     doc.setFontSize(12);
     doc.setTextColor(50, 50, 50);
 
     let currentY = 105; // posición inicial del texto
 
-    // Formatear el tipo de decoración
     const tipoDecoracion = formatearTipo(tipo);
 
-    // Coste con dos decimales para añadir (Bs. XXXX.XX/100)
-    const montoTexto = parseFloat(monto).toFixed(2);
-    // Construimos la parte final: " (Bs. 1200.00/100)" 
-    const parentesisCosto = ` (Bs. ${montoTexto}/100)`;
+    /*
+      Convertimos el "monto" a texto en español:
+      - separa parte entera y decimal
+      - convierte la parte entera a palabras (ej. 875 -> "ochocientos setenta y cinco")
+      - la parte decimal se imprime como XX/100 (ej. .50 -> "50/100")
+    */
+    const { enteroTexto, centavosTexto } = montoALetras(monto);
 
-    /* 
-       Estructura del texto:
-       "El día [fecha], [cliente] efectuó el pago de Bs. [monto] (Bs. XX.XX/100) 
-        por la [tipoDecoracion], contratada con la Empresa Hello Balloons.
-        Confirmamos la recepción satisfactoria de dicho monto.
+    // Ejemplo final: "875 Bs (ochocientos setenta y cinco bolivianos 75/100)"
+    const costoFinal = `${monto} Bs (${enteroTexto} bolivianos ${centavosTexto}/100)`; 
 
-        Recibí conforme: [firma]
+    /*
+       Estructura del texto principal:
+       "El día [fecha], [cliente] efectuó el pago de [costoFinal]
+       por la [tipoDecoracion], contratada con la Empresa Hello Balloons.
+       Confirmamos la recepción satisfactoria de dicho monto.
+
+       Recibí conforme: [firma]
     */
     const textoPrincipal =
-      `El día ${fecha}, ${cliente} efectuó el pago de Bs. ${monto}${parentesisCosto} ` +
+      `El día ${fecha}, ${cliente} efectuó el pago de ${costoFinal} ` +
       `por la ${tipoDecoracion}, contratada con la Empresa Hello Balloons.\n\n` +
       `Confirmamos la recepción satisfactoria de dicho monto.\n\n` +
       `Recibí conforme: ${firma}`;
@@ -312,6 +318,7 @@
     const mensajeAgradecimiento =
       "¡Gracias por elegirnos! Seguiremos trabajando para que cada detalle " +
       "sea una experiencia llena de color y alegría.";
+
     const lineasAgradecimiento = doc.splitTextToSize(mensajeAgradecimiento, pageWidth - 40);
     doc.text(lineasAgradecimiento, 20, currentY);
 
@@ -359,6 +366,119 @@
       case "carros": return "decoración de carros";
       default: return "decoración especial";
     }
+  }
+
+  /*
+    Convierta un número (string o float) a su representación en letras.
+    - Parte entera a letras (hasta 999,999)
+    - Parte decimal => XX/100
+  */
+  function montoALetras(montoStr) {
+    // Primero, convertir a número con 2 decimales
+    let montoNum = parseFloat(montoStr).toFixed(2); // "875.00", "999.50", ...
+    const [entero, decimal] = montoNum.split("."); // entero="875", decimal="00" o "50", etc.
+
+    // Convertir el entero a letras
+    const enteroEnLetras = numeroALetras(parseInt(entero, 10));
+
+    // decimal => XX/100
+    // devolvemos un objeto con { enteroTexto, centavosTexto }
+    return {
+      enteroTexto: enteroEnLetras,
+      centavosTexto: decimal // "00" o "50"
+    };
+  }
+
+  /*
+    Convierte un número entero (0 - 999999) a su versión en palabras en español (bolivianos).
+    Solo maneja hasta 999,999 para el ejemplo.
+  */
+  function numeroALetras(num) {
+    if (num === 0) return "cero";
+    if (num > 999999) {
+      return "cantidad excede el límite";
+    }
+
+    const UNIDADES = [
+      "", "uno", "dos", "tres", "cuatro", "cinco", 
+      "seis", "siete", "ocho", "nueve", "diez",
+      "once", "doce", "trece", "catorce", "quince",
+      "dieciséis", "diecisiete", "dieciocho", "diecinueve"
+    ];
+    const DECENAS = [
+      "", "", "veinte", "treinta", "cuarenta", "cincuenta",
+      "sesenta", "setenta", "ochenta", "noventa"
+    ];
+    const CENTENAS = [
+      "", "ciento", "doscientos", "trescientos", "cuatrocientos",
+      "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"
+    ];
+
+    // Función interna para 1 a 999
+    function seccionTresCifras(n) {
+      let c = Math.floor(n / 100); // centena
+      let d = Math.floor((n % 100) / 10); // decena
+      let u = n % 10; // unidad
+      let letras = "";
+
+      // caso especial 100
+      if (c === 1 && d === 0 && u === 0) {
+        return "cien";
+      } else {
+        letras += CENTENAS[c];
+      }
+
+      // del 1 al 19
+      const resto = n % 100;
+      if (resto < 20) {
+        if (resto !== 0) {
+          if (c > 0) letras += " ";
+          letras += UNIDADES[resto];
+        }
+      } else {
+        // 20,30,...
+        if (c > 0 && d > 0) letras += " ";
+        letras += DECENAS[d];
+        if (u !== 0) {
+          if (d > 2) {
+            // "treinta y dos" etc.
+            letras += " y " + UNIDADES[u];
+          } else {
+            // "veintiuno"
+            if (d === 2) {
+              // decena=2 => "veinte"
+              if (u === 1) letras = letras.slice(0, -1) + "ún"; 
+              else letras = letras.slice(0, -1) + UNIDADES[u];
+            }
+          }
+        }
+      }
+      return letras.trim();
+    }
+
+    // Separar miles y unidades
+    let miles = Math.floor(num / 1000);
+    let centenas = num % 1000;
+    let textoMiles = "";
+    let textoCentenas = seccionTresCifras(centenas);
+
+    if (miles > 0) {
+      if (miles === 1) {
+        textoMiles = "mil";
+      } else {
+        textoMiles = seccionTresCifras(miles) + " mil";
+      }
+    }
+
+    let resultado = "";
+    if (textoMiles) resultado = textoMiles;
+    if (textoCentenas) {
+      if (textoMiles) resultado += " ";
+      resultado += textoCentenas;
+    }
+    // Corrección "uno" -> "un" si va antes de sustantivo (opcional)
+    // Por simplicidad, aquí lo dejaremos como "uno" excepto en "veintiún".
+    return resultado.trim();
   }
 </script>
 </body>
