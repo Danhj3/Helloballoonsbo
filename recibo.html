@@ -29,7 +29,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       /* Ancho adaptable */
       width: 90%;
-      max-width: 500px; /* no se hace más grande de 500px */
+      max-width: 500px; /* no se hace más grande de 500px en desktop */
       text-align: center;
       margin: 0 auto;
     }
@@ -82,12 +82,6 @@
       background-color: #0b7f78;
     }
 
-    /* Si quisieras justificar texto dentro del formulario,
-       podrías usar una clase .texto-justificado, por ejemplo: 
-       .texto-justificado { text-align: justify; }
-       y aplicarla a ciertos <p> o contenedores.
-    */
-
     /* Sección de redes sociales */
     .redes {
       display: flex;
@@ -127,7 +121,6 @@
         padding: 8px 15px;
       }
     }
-
   </style>
 </head>
 <body>
@@ -196,12 +189,15 @@
       return;
     }
 
-    // PDF con tamaño personalizado (tipo "volante").
-    // 350 pt de ancho x 250 pt de alto (aprox.)
+    /*
+     * Creamos el PDF en tamaño personalizado (350 pt x 300 pt)
+     * para que sea un volante lo suficientemente alto
+     * evitando que el logo y la línea se sobrepongan.
+     */
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "pt",
-      format: [350, 250]
+      format: [350, 300]
     });
 
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -211,62 +207,65 @@
     try {
       const logoUrl = "https://i.imgur.com/41t5f0K.png";
       const imgDataLogo = await getBase64FromUrl(logoUrl);
-      // Ajustamos para que quede proporcional en un volante pequeño
-      doc.addImage(imgDataLogo, "PNG", 20, 20, 60, 60);
+      // Ajustamos para no ocupar tanto espacio
+      doc.addImage(imgDataLogo, "PNG", 20, 20, 40, 40);
     } catch (err) {
       console.log("No se pudo cargar el logo:", err);
     }
 
-    // --- Título ---
+    // --- TÍTULO PRINCIPAL ---
     doc.setFont("times", "bold");
     doc.setFontSize(14);
     doc.setTextColor(226, 85, 123); // Rosa
-    doc.text("Recibo de Decoración", pageWidth / 2, 35, { align: "center" });
+    doc.text("Recibo de Decoración", pageWidth / 2, 70, { align: "center" });
 
-    // --- Subtítulo Hello Balloons ---
+    // --- SUBTÍTULO HELLO BALLOONS ---
     doc.setFontSize(10);
     doc.setFont("times", "normal");
     doc.setTextColor(12, 164, 148); // Verde agua
-    doc.text("Hello Balloons", pageWidth / 2, 50, { align: "center" });
+    doc.text("Hello Balloons", pageWidth / 2, 85, { align: "center" });
 
-    // Línea estética (espacios más abajo)
+    // --- LÍNEA DECORATIVA BAJO EL SUBTÍTULO ---
     doc.setDrawColor(226, 85, 123);
     doc.setLineWidth(1);
-    doc.line(20, 68, pageWidth - 20, 68);
+    // Colocamos la línea un poco más abajo para no chocar con el texto
+    doc.line(20, 100, pageWidth - 20, 100);
 
-    // --- Texto principal del Recibo ---
+    // --- TEXTO PRINCIPAL DEL RECIBO ---
     doc.setFont("times", "normal");
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setTextColor(50, 50, 50);
 
-    let currentY = 100;
+    let currentY = 125; // empezamos debajo de la línea
+
     const tipoDecoracion = formatearTipo(tipo);
 
-    // Redacción más amable y profesional, con “justificación” usando splitTextToSize
+    // Redacción prolija, sin redundancias
     let textoRecibo = 
-      `La presente confirma que, en la fecha ${fecha}, la Sra./Sr. ${cliente} ` +
-      `efectuó el pago de Bs. ${monto} por una ${tipoDecoracion} de Hello Balloons.\n\n` +
-      `Confirmamos la recepción satisfactoria de este monto.\n\n` +
-      `Recibí conforme: ${firma}`;
+      `La presente constancia deja en claro que el ${fecha}, ` +
+      `${cliente} realizó el pago total de Bs. ${monto} ` +
+      `por la ${tipoDecoracion} contratada con Hello Balloons.\n\n` +
+      `Con este documento, confirmamos la recepción satisfactoria ` +
+      `de dicho monto.\n\nRecibí conforme: ${firma}`;
 
-    // Dividir texto para ajustarlo al ancho
+    // Partimos el texto para “justificar” en lo posible
     const lineas = doc.splitTextToSize(textoRecibo, pageWidth - 40);
     doc.text(lineas, 20, currentY);
     currentY += lineas.length * 14 + 10;
 
-    // --- Mensaje breve de agradecimiento ---
+    // --- MENSAJE DE AGRADECIMIENTO ---
     doc.setFont("times", "italic");
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setTextColor(80, 80, 80);
 
     const mensajeAgradecimiento =
-      "Agradecemos su preferencia. Seguiremos llenando cada celebración " +
-      "de creatividad, alegría y un servicio de primera.";
+      "Agradecemos enormemente tu confianza. Seguiremos trabajando " +
+      "para llenar cada momento de color y alegría.";
 
     const agradecimientoLines = doc.splitTextToSize(mensajeAgradecimiento, pageWidth - 40);
     doc.text(agradecimientoLines, 20, currentY);
 
-    // --- Líneas decorativas al final ---
+    // --- LÍNEAS DECORATIVAS AL FINAL ---
     doc.setDrawColor(226, 85, 123);
     doc.setLineWidth(2);
     doc.line(20, pageHeight - 50, pageWidth - 20, pageHeight - 50);
@@ -277,7 +276,7 @@
     doc.setDrawColor(214, 210, 52);
     doc.line(20, pageHeight - 38, pageWidth - 20, pageHeight - 38);
 
-    // --- Guardar PDF ---
+    // --- GUARDAR PDF ---
     doc.save("Recibo_HelloBalloons_Volante.pdf");
   }
 
