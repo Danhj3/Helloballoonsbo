@@ -116,11 +116,11 @@
     }
 
     // PDF con tamaño personalizado (tipo "volante")
-    // 350 pt de ancho x 500 pt de alto (aprox.)
+    // 350 pt de ancho x 250 pt de alto (aprox.)
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "pt",
-      format: [350, 500]
+      format: [350, 250]
     });
 
     const pageWidth = doc.internal.pageSize.getWidth();
