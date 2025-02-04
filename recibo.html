@@ -2,217 +2,236 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Recibo de Decoración - Hello Balloons</title>
+  <title>Recibo Pequeño - Hello Balloons</title>
   <style>
     body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f9f9f9;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+      font-family: Arial, sans-serif;
+      margin: 0; 
+      padding: 0; 
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
     .recibo {
-        background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        width: 400px;
-        text-align: center;
-    }
-    .recibo h1 {
-        font-size: 24px;
-        color: #E2557B;
-        margin-bottom: 20px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 300px;
+      text-align: center;
     }
     .recibo .logo {
-        width: 100px;
-        height: auto;
-        margin-bottom: 20px;
+      width: 80px;
+      margin-bottom: 15px;
+    }
+    .recibo h1 {
+      font-size: 20px;
+      color: #E2557B;
+      margin-bottom: 10px;
     }
     .recibo .info {
-        text-align: left;
-        margin-bottom: 20px;
+      text-align: left;
+      margin: 10px 0 20px;
     }
     .recibo .info label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #0CA494;
+      color: #0CA494;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
     }
     .recibo .info input,
     .recibo .info select {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 14px;
-    }
-    .recibo .firma {
-        margin-top: 20px;
-        border-top: 2px solid #E2557B;
-        padding-top: 10px;
-    }
-    .recibo .firma p {
-        font-size: 14px;
-        color: #555;
-    }
-    .recibo .firma input {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 14px;
-        margin-top: 10px;
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
     .recibo .boton {
-        background-color: #0CA494;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        margin-top: 20px;
+      background-color: #0CA494;
+      color: #fff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
     }
     .recibo .boton:hover {
-        background-color: #0b7f78;
+      background-color: #0b7f78;
     }
   </style>
 </head>
 <body>
-    <div class="recibo">
-        <img src="https://i.imgur.com/41t5f0K.png" alt="Hello Balloons Logo" class="logo">
-        <h1>Recibo de Decoración</h1>
-        <div class="info">
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" required>
 
-            <label for="tipo">Tipo de Decoración:</label>
-            <select id="tipo" required>
-                <option value="baby_shower">Decoración Baby Shower</option>
-                <option value="bautizo">Decoración Bautizo</option>
-                <option value="cumpleanos">Decoración Cumpleaños</option>
-                <option value="graduacion">Decoración Graduación</option>
-                <option value="revelacion">Decoración Revelación</option>
-            </select>
+<div class="recibo">
+  <img src="https://i.imgur.com/41t5f0K.png" alt="Hello Balloons Logo" class="logo" />
+  <h1>Recibo de Decoración</h1>
+  
+  <div class="info">
+    <label for="fecha">Fecha:</label>
+    <input type="date" id="fecha" required>
 
-            <label for="monto">Monto del Costo:</label>
-            <input type="number" id="monto" placeholder="Ingrese el monto" required>
+    <label for="tipo">Tipo de Decoración:</label>
+    <select id="tipo" required>
+      <option value="" disabled selected>Selecciona una opción</option>
+      <option value="baby_shower">Baby Shower</option>
+      <option value="bautizo">Bautizo</option>
+      <option value="cumpleanos">Cumpleaños</option>
+      <option value="graduacion">Graduación</option>
+      <option value="revelacion">Revelación</option>
+      <option value="despedida_soltera">Despedida de Soltera</option>
+      <option value="evento_corporativo">Evento Corporativo</option>
+    </select>
 
-            <label for="cliente">Nombre del Cliente:</label>
-            <input type="text" id="cliente" placeholder="Nombre del cliente" required>
-        </div>
-        <div class="firma">
-            <p>Recibí conforme:</p>
-            <input type="text" id="firma" placeholder="Jennifer Arredondo Villagómez" required>
-        </div>
-        <button class="boton" onclick="generarRecibo()">Generar Recibo</button>
-    </div>
+    <label for="monto">Costo:</label>
+    <input type="number" id="monto" placeholder="Ej. 1200" required>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        const { jsPDF } = window.jspdf;
+    <label for="cliente">Cliente:</label>
+    <input type="text" id="cliente" placeholder="Nombre del cliente" required>
 
-        async function generarRecibo() {
-            const fecha = document.getElementById('fecha').value;
-            const tipo = document.getElementById('tipo').value;
-            const monto = document.getElementById('monto').value;
-            const cliente = document.getElementById('cliente').value;
-            const firma = document.getElementById('firma').value;
+    <label for="firma">Recibí conforme:</label>
+    <input type="text" id="firma" value="Jennifer Arredondo Villagómez" required>
+  </div>
+  
+  <button class="boton" onclick="generarRecibo()">Generar Recibo</button>
+</div>
 
-            if (!fecha || !tipo || !monto || !cliente || !firma) {
-                alert('Por favor, complete todos los campos.');
-                return;
-            }
+<!-- Librería jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  const { jsPDF } = window.jspdf;
 
-            const doc = new jsPDF({ unit: "pt", format: "a4" });
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
+  async function generarRecibo() {
+    const fecha = document.getElementById('fecha').value;
+    const tipo = document.getElementById('tipo').value;
+    const monto = document.getElementById('monto').value;
+    const cliente = document.getElementById('cliente').value;
+    const firma = document.getElementById('firma').value;
 
-            // === 1) Agregar LOGO a la izquierda ===
-            try {
-                const logoUrl = "https://i.imgur.com/41t5f0K.png";
-                const imgDataLogo = await getBase64FromUrl(logoUrl);
-                doc.addImage(imgDataLogo, "PNG", 40, 40, 80, 80);
-            } catch (err) {
-                console.log("No se pudo cargar el logo externamente:", err);
-            }
+    if (!fecha || !tipo || !monto || !cliente || !firma) {
+      alert("Por favor, complete todos los campos.");
+      return;
+    }
 
-            // === 2) Título centrado y grande ===
-            doc.setFontSize(18);
-            doc.text(
-                "Recibo de Decoración", // Título principal
-                pageWidth / 2,
-                90, 
-                { align: "center" }
-            );
+    // PDF en tamaño A5 (más pequeño que A4)
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a5" 
+    });
 
-            // === 3) Subtítulo "Hello Balloons" ===
-            doc.setFontSize(14);
-            doc.text(
-                "Hello Balloons", // Subtítulo
-                pageWidth / 2,
-                110, 
-                { align: "center" }
-            );
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-            // === 4) Información del recibo ===
-            doc.setFontSize(12);
-            doc.setFont(undefined, "normal");
+    // --- LOGO ---
+    try {
+      const logoUrl = "https://i.imgur.com/41t5f0K.png";
+      const imgDataLogo = await getBase64FromUrl(logoUrl);
+      doc.addImage(imgDataLogo, "PNG", 40, 30, 60, 60);
+    } catch (err) {
+      console.log("No se pudo cargar el logo:", err);
+    }
 
-            const fechaTexto = `Fecha: ${fecha}`;
-            const tipoTexto = `Tipo de Decoración: ${tipo}`;
-            const montoTexto = `Monto: $${monto}`;
-            const clienteTexto = `Cliente: ${cliente}`;
-            const firmaTexto = `Firma: ${firma}`;
+    // --- Título ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(226, 85, 123); // Rosa
+    doc.text("Recibo de Decoración", pageWidth / 2, 50, { align: "center" });
 
-            const textoCompleto = [fechaTexto, tipoTexto, montoTexto, clienteTexto, firmaTexto];
-            const textY = 140; // Posición inicial del texto
+    // --- Subtítulo Hello Balloons ---
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(12, 164, 148); // Verde agua
+    doc.text("Hello Balloons", pageWidth / 2, 68, { align: "center" });
 
-            textoCompleto.forEach((line, index) => {
-                doc.text(line, 40, textY + (index * 20));
-            });
+    // Línea estética debajo del logo/títulos
+    doc.setDrawColor(226, 85, 123);
+    doc.setLineWidth(1);
+    doc.line(30, 80, pageWidth - 30, 80);
 
-            // === 5) Tres líneas estéticas al final de la hoja ===
-            const line1 = pageHeight - 60;
-            const line2 = pageHeight - 55;
-            const line3 = pageHeight - 50;
+    // --- Texto principal del Recibo ---
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
 
-            // 1ra línea (#E2557B)
-            doc.setDrawColor(226, 85, 123);
-            doc.setLineWidth(2);
-            doc.line(40, line1, pageWidth - 40, line1);
+    // Posición de inicio para el texto
+    let currentY = 120;
 
-            // 2da línea (#0CA494)
-            doc.setDrawColor(12, 164, 148);
-            doc.line(40, line2, pageWidth - 40, line2);
+    // Redactamos el texto genérico
+    // "En (fecha), (cliente) realizó la transferencia de $ (monto) por una (tipo) de Hello Balloons. Recibí conforme: (firma)"
+    const tipoDecoracion = formatearTipo(tipo);
+    const textoRecibo = 
+      `En la fecha ${fecha}, ${cliente} realizó el pago de $${monto} ` +
+      `por una ${tipoDecoracion} de Hello Balloons.\n\n` +
+      `Recibí conforme: ${firma}`;
 
-            // 3ra línea (#D6D234)
-            doc.setDrawColor(214, 210, 52);
-            doc.line(40, line3, pageWidth - 40, line3);
+    // Imprimimos
+    const lineas = doc.splitTextToSize(textoRecibo, pageWidth - 60);
+    doc.text(lineas, 30, currentY);
 
-            // === 6) Guardar PDF ===
-            doc.save("Recibo_HelloBalloons.pdf");
-        }
+    // Aumentamos la posición Y en base al texto impreso
+    currentY += lineas.length * 14 + 20;
 
-        /*
-          Función auxiliar para convertir una URL de imagen en base64.
-        */
-        async function getBase64FromUrl(url) {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-    </script>
+    // --- Mensaje de agradecimiento (antes estaba en el QR) ---
+    const mensajeAgradecimiento =
+      "¡Gracias por confiar en Hello Balloons! " +
+      "Tu preferencia nos motiva a seguir llenando de color y alegría " +
+      "cada celebración. Con tu apoyo, creamos recuerdos memorables " +
+      "y fortalecemos lazos de cariño. " +
+      "¡Sigamos celebrando la vida, porque cada momento especial " +
+      "merece un toque de magia!";
+
+    const lineasAgradecimiento = doc.splitTextToSize(mensajeAgradecimiento, pageWidth - 60);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(60, 60, 60);
+    doc.text(lineasAgradecimiento, 30, currentY);
+
+    // --- Líneas decorativas al final ---
+    doc.setDrawColor(226, 85, 123);
+    doc.setLineWidth(2);
+    doc.line(30, pageHeight - 50, pageWidth - 30, pageHeight - 50);
+
+    doc.setDrawColor(12, 164, 148);
+    doc.line(30, pageHeight - 44, pageWidth - 30, pageHeight - 44);
+
+    doc.setDrawColor(214, 210, 52);
+    doc.line(30, pageHeight - 38, pageWidth - 30, pageHeight - 38);
+
+    // --- Guardar PDF ---
+    doc.save("Recibo_HelloBalloons_A5.pdf");
+  }
+
+  /*
+    Convierte una URL de imagen a Base64
+  */
+  async function getBase64FromUrl(url) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  /*
+    Formatea el tipo de decoración
+  */
+  function formatearTipo(tipo) {
+    switch (tipo) {
+      case "baby_shower": return "Decoración Baby Shower";
+      case "bautizo": return "Decoración Bautizo";
+      case "cumpleanos": return "Decoración Cumpleaños";
+      case "graduacion": return "Decoración Graduación";
+      case "revelacion": return "Decoración Revelación";
+      case "despedida_soltera": return "Despedida de Soltera";
+      case "evento_corporativo": return "Evento Corporativo";
+      default: return tipo;
+    }
+  }
+</script>
 </body>
 </html>
